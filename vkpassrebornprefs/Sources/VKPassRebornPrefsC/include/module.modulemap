@@ -1,0 +1,4 @@
+module VKPassRebornPrefsC {
+    umbrella "."
+    export *
+}

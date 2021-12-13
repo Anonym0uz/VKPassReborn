@@ -1,0 +1,9 @@
+Package: ru.anonym0uz.vkpassreborn
+Name: VKPassReborn
+Version: 0.0.1
+Architecture: iphoneos-arm
+Description: An awesome Orion tweak!
+Maintainer: Alexander Orlov
+Author: Alexander Orlov
+Section: Tweaks
+Depends: ${ORION}, firmware (>= 12.2)
