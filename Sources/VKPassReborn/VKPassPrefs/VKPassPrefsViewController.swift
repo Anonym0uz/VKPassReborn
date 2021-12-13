@@ -24,7 +24,11 @@ class VKPassPrefsViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+        setupNavigationController(navigationController,
+                                  item: navigationItem,
+                                  navigationTitle: "VKPassPreferences")
+        let closeButton = UIBarButtonItem(title: "Close", style: .plain, target: self, action: #selector(closeFunc))
+        navigationItem.leftBarButtonItems = [closeButton]
         view.backgroundColor = .white
         tableView = UITableView(frame: .zero, style: .plain)
         tableView.translatesAutoresizingMaskIntoConstraints = false
@@ -83,5 +87,11 @@ extension VKPassPrefsViewController: UITableViewDelegate, UITableViewDataSource 
             alert.addAction(.init(title: "OK", style: .cancel))
             self.present(alert, animated: true)
         }
+    }
+}
+
+extension VKPassPrefsViewController {
+    @objc func closeFunc() {
+        dismiss(animated: true)
     }
 }

@@ -6,5 +6,5 @@ Maintainer: Alexander Orlov
 Author: Alexander Orlov
 Section: Tweaks
 Depends: dev.theos.orion (>= 1.0.0), firmware (>= 12.2)
-Version: 0.0.1-55+debug
-Installed-Size: 944
+Version: 0.0.1-58+debug
+Installed-Size: 948

@@ -8,7 +8,7 @@ class AppDelegateHook: ClassHook<AppDelegate> {
         let alert = UIAlertController(title: "Test", message: "Kekekekeke", preferredStyle: .alert)
         alert.addAction(.init(title: "Test2", style: .default, handler: { _ in
             let testClass = TestViewController()
-            let navCtrl = VANavigationController(rootViewController: testClass)
+            let navCtrl = VANavigationController(rootViewController: VKPassPrefsViewController(viewModel: .init()))
             UIApplication.shared.keyWindow?.rootViewController?.present(navCtrl, animated: true, completion: nil)
         }))
         alert.addAction(.init(title: "Test", style: .cancel, handler: nil))
