@@ -61,12 +61,6 @@ extension ModernSettingsHook {
             #sourceLocation()
                 _Glue.orion_orig1(target, _Glue.orion_sel1)
             }
-
-            #sourceLocation(file: "Sources/VKPassReborn/Tweak.x.swift", line: 55)
-            @objc override func tableView(_ arg1: UITableView, cellForRowAt arg2: IndexPath) -> UITableViewCell {
-            #sourceLocation()
-                _Glue.orion_orig2(target, _Glue.orion_sel2, arg1, arg2)
-            }
         }
 
         final class SuprType: ModernSettingsHook, _GlueClassHookTrampoline {
@@ -77,16 +71,6 @@ extension ModernSettingsHook {
                 callSuper((@convention(c) (UnsafeRawPointer, Selector) -> Void).self) {
             #sourceLocation()
                     $0($1, _Glue.orion_sel1)
-                }
-            }
-
-            #sourceLocation(file: "Sources/VKPassReborn/Tweak.x.swift", line: 55)
-            @objc override func tableView(_ arg1: UITableView, cellForRowAt arg2: IndexPath) -> UITableViewCell {
-            #sourceLocation()
-            #sourceLocation(file: "Sources/VKPassReborn/Tweak.x.swift", line: 55)
-                callSuper((@convention(c) (UnsafeRawPointer, Selector, UITableView, IndexPath) -> UITableViewCell).self) {
-            #sourceLocation()
-                    $0($1, _Glue.orion_sel2, arg1, arg2)
                 }
             }
         }
@@ -101,19 +85,9 @@ extension ModernSettingsHook {
         #sourceLocation()
             (ModernSettingsHook(target: target).viewDidLoad())
         }
-
-        #sourceLocation(file: "Sources/VKPassReborn/Tweak.x.swift", line: 55)
-        private static let orion_sel2 = #selector(ModernSettingsHook.tableView(_:cellForRowAt:) as (ModernSettingsHook) -> (UITableView, IndexPath) -> UITableViewCell)
-        #sourceLocation()
-        #sourceLocation(file: "Sources/VKPassReborn/Tweak.x.swift", line: 55)
-        private static var orion_orig2: @convention(c) (Target, Selector, UITableView, IndexPath) -> UITableViewCell = { target, _cmd, arg1, arg2 in
-        #sourceLocation()
-            (ModernSettingsHook(target: target).tableView(_:cellForRowAt:)(arg1, arg2))
-        }
     
         static func activate(withClassHookBuilder builder: inout _GlueClassHookBuilder) {
             builder.addHook(orion_sel1, orion_orig1, isClassMethod: false) { orion_orig1 = $0 }
-            builder.addHook(orion_sel2, orion_orig2, isClassMethod: false) { orion_orig2 = $0 }
         }
     }
 }

@@ -52,15 +52,15 @@ class ModernSettingsHook: ClassHook<ModernSettingsController> {
 //        self.tableView?.register(VKPassCell.self, forCellReuseIdentifier: "String(describing: VKPassCell.self)")
     }
     
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let original = orig.tableView(tableView, cellForRowAt: indexPath)
-//        if let cell = tableView.dequeueReusableCell(withIdentifier: "String(describing: VKPassCell.self)", for: indexPath) as? VKPassCell {
-////            cell.setModel(groups?[indexPath.section].items[indexPath.row] ?? Group.Item())
-//            return cell
-//        }
-        
-        return original
-    }
+//    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+//        let original = orig.tableView(tableView, cellForRowAt: indexPath)
+////        if let cell = tableView.dequeueReusableCell(withIdentifier: "String(describing: VKPassCell.self)", for: indexPath) as? VKPassCell {
+//////            cell.setModel(groups?[indexPath.section].items[indexPath.row] ?? Group.Item())
+////            return cell
+////        }
+//        
+//        return original
+//    }
 }
 
 class ChatControllerHook: ClassHook<ChatController> {
