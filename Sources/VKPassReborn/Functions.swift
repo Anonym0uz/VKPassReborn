@@ -19,26 +19,27 @@ func defaultPreferences() -> [Group] {
     return dictionaryStandart
 }
 
-func createPreferencesPlist() {
+func checkPreferences() {
     let fileManager = FileManager.default
     
     let documentDirectory = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0] as String
     let path = documentDirectory.appending("/ru.anonz.vkpassreborn.plist")
     
     if(!fileManager.fileExists(atPath: path)) {
-        let data : [Group] = defaultPreferences()
-        
-        let encoder = PropertyListEncoder()
-        encoder.outputFormat = .xml
-        do {
-            let data = try encoder.encode(data)
-            try data.write(to: getPath())
-        } catch {
-            // Handle error
-            print(error)
-        }
-    } else {
-        // Error handler
+        createPreferencesPlist()
+    } else {}
+}
+
+func createPreferencesPlist() {
+    let data : [Group] = defaultPreferences()
+    
+    let encoder = PropertyListEncoder()
+    encoder.outputFormat = .xml
+    do {
+        let data = try encoder.encode(data)
+        try data.write(to: getPath())
+    } catch {
+        print(error)
     }
 }
 

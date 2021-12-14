@@ -1,0 +1,13 @@
+version: "Apple Swift version 5.5.2 (swiftlang-1300.0.47.5 clang-1300.0.29.30)"
+options: "767a5da65d1d9ec48c10c058754195b63f602acb111e6d44eb6827374e6c48c2"
+build_start_time: [1639482891, 518581867]
+build_end_time: [1639482897, 105545997]
+inputs:
+  "/Users/anonym0uz/Developer/VKPassReborn/.theos/obj/debug/arm64/generated/VKPassReborn.xc.swift": [1639482891, 248882293]
+  "Sources/VKPassReborn/Functions.swift": [1639482366, 53417444]
+  "Sources/VKPassReborn/Paths.swift": [1639482366, 53479194]
+  "Sources/VKPassReborn/TestViewController.swift": [1639482366, 53542613]
+  "Sources/VKPassReborn/Tweak.x.swift": [1639482366, 53597927]
+  "Sources/VKPassReborn/UITableCells/BasePreferencesCell.swift": [1639482366, 53679466]
+  "Sources/VKPassReborn/VKPassPrefs/VKPassPrefsViewController.swift": [1639482366, 53775310]
+  "Sources/VKPassReborn/VKPassPrefs/VKPassPrefsViewModel.swift": [1639482366, 53832769]

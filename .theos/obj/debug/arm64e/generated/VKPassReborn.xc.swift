@@ -51,6 +51,73 @@ extension AppDelegateHook {
     }
 }
 
+extension ModernSettingsHook {
+    enum _Glue: _GlueClassHook {
+        typealias HookType = ModernSettingsHook
+
+        final class OrigType: ModernSettingsHook, _GlueClassHookTrampoline {
+            #sourceLocation(file: "Sources/VKPassReborn/Tweak.x.swift", line: 50)
+            @objc override func viewDidLoad()  {
+            #sourceLocation()
+                _Glue.orion_orig1(target, _Glue.orion_sel1)
+            }
+
+            #sourceLocation(file: "Sources/VKPassReborn/Tweak.x.swift", line: 55)
+            @objc override func tableView(_ arg1: UITableView, cellForRowAt arg2: IndexPath) -> UITableViewCell {
+            #sourceLocation()
+                _Glue.orion_orig2(target, _Glue.orion_sel2, arg1, arg2)
+            }
+        }
+
+        final class SuprType: ModernSettingsHook, _GlueClassHookTrampoline {
+            #sourceLocation(file: "Sources/VKPassReborn/Tweak.x.swift", line: 50)
+            @objc override func viewDidLoad()  {
+            #sourceLocation()
+            #sourceLocation(file: "Sources/VKPassReborn/Tweak.x.swift", line: 50)
+                callSuper((@convention(c) (UnsafeRawPointer, Selector) -> Void).self) {
+            #sourceLocation()
+                    $0($1, _Glue.orion_sel1)
+                }
+            }
+
+            #sourceLocation(file: "Sources/VKPassReborn/Tweak.x.swift", line: 55)
+            @objc override func tableView(_ arg1: UITableView, cellForRowAt arg2: IndexPath) -> UITableViewCell {
+            #sourceLocation()
+            #sourceLocation(file: "Sources/VKPassReborn/Tweak.x.swift", line: 55)
+                callSuper((@convention(c) (UnsafeRawPointer, Selector, UITableView, IndexPath) -> UITableViewCell).self) {
+            #sourceLocation()
+                    $0($1, _Glue.orion_sel2, arg1, arg2)
+                }
+            }
+        }
+
+        static let storage = initializeStorage()
+
+        #sourceLocation(file: "Sources/VKPassReborn/Tweak.x.swift", line: 50)
+        private static let orion_sel1 = #selector(ModernSettingsHook.viewDidLoad as (ModernSettingsHook) -> () -> Void)
+        #sourceLocation()
+        #sourceLocation(file: "Sources/VKPassReborn/Tweak.x.swift", line: 50)
+        private static var orion_orig1: @convention(c) (Target, Selector) -> Void = { target, _cmd in
+        #sourceLocation()
+            (ModernSettingsHook(target: target).viewDidLoad())
+        }
+
+        #sourceLocation(file: "Sources/VKPassReborn/Tweak.x.swift", line: 55)
+        private static let orion_sel2 = #selector(ModernSettingsHook.tableView(_:cellForRowAt:) as (ModernSettingsHook) -> (UITableView, IndexPath) -> UITableViewCell)
+        #sourceLocation()
+        #sourceLocation(file: "Sources/VKPassReborn/Tweak.x.swift", line: 55)
+        private static var orion_orig2: @convention(c) (Target, Selector, UITableView, IndexPath) -> UITableViewCell = { target, _cmd, arg1, arg2 in
+        #sourceLocation()
+            (ModernSettingsHook(target: target).tableView(_:cellForRowAt:)(arg1, arg2))
+        }
+    
+        static func activate(withClassHookBuilder builder: inout _GlueClassHookBuilder) {
+            builder.addHook(orion_sel1, orion_orig1, isClassMethod: false) { orion_orig1 = $0 }
+            builder.addHook(orion_sel2, orion_orig2, isClassMethod: false) { orion_orig2 = $0 }
+        }
+    }
+}
+
 extension ChatControllerHook {
     enum _Glue: _GlueClassHook {
         typealias HookType = ChatControllerHook
@@ -72,13 +139,13 @@ extension AudioSubscriptionCheckerHook {
         typealias HookType = AudioSubscriptionCheckerHook
 
         final class OrigType: AudioSubscriptionCheckerHook, _GlueClassHookTrampoline {
-            #sourceLocation(file: "Sources/VKPassReborn/Tweak.x.swift", line: 26)
+            #sourceLocation(file: "Sources/VKPassReborn/Tweak.x.swift", line: 70)
             @objc override func updateExpiresDate(_ arg1: Int64, musicSubscriptionPurchasedDuringSession arg2: Bool)  {
             #sourceLocation()
                 _Glue.orion_orig1(target, _Glue.orion_sel1, arg1, arg2)
             }
 
-            #sourceLocation(file: "Sources/VKPassReborn/Tweak.x.swift", line: 30)
+            #sourceLocation(file: "Sources/VKPassReborn/Tweak.x.swift", line: 74)
             @objc override func subscriptionActive() -> Bool {
             #sourceLocation()
                 _Glue.orion_orig2(target, _Glue.orion_sel2)
@@ -86,20 +153,20 @@ extension AudioSubscriptionCheckerHook {
         }
 
         final class SuprType: AudioSubscriptionCheckerHook, _GlueClassHookTrampoline {
-            #sourceLocation(file: "Sources/VKPassReborn/Tweak.x.swift", line: 26)
+            #sourceLocation(file: "Sources/VKPassReborn/Tweak.x.swift", line: 70)
             @objc override func updateExpiresDate(_ arg1: Int64, musicSubscriptionPurchasedDuringSession arg2: Bool)  {
             #sourceLocation()
-            #sourceLocation(file: "Sources/VKPassReborn/Tweak.x.swift", line: 26)
+            #sourceLocation(file: "Sources/VKPassReborn/Tweak.x.swift", line: 70)
                 callSuper((@convention(c) (UnsafeRawPointer, Selector, Int64, Bool) -> Void).self) {
             #sourceLocation()
                     $0($1, _Glue.orion_sel1, arg1, arg2)
                 }
             }
 
-            #sourceLocation(file: "Sources/VKPassReborn/Tweak.x.swift", line: 30)
+            #sourceLocation(file: "Sources/VKPassReborn/Tweak.x.swift", line: 74)
             @objc override func subscriptionActive() -> Bool {
             #sourceLocation()
-            #sourceLocation(file: "Sources/VKPassReborn/Tweak.x.swift", line: 30)
+            #sourceLocation(file: "Sources/VKPassReborn/Tweak.x.swift", line: 74)
                 callSuper((@convention(c) (UnsafeRawPointer, Selector) -> Bool).self) {
             #sourceLocation()
                     $0($1, _Glue.orion_sel2)
@@ -109,19 +176,19 @@ extension AudioSubscriptionCheckerHook {
 
         static let storage = initializeStorage()
 
-        #sourceLocation(file: "Sources/VKPassReborn/Tweak.x.swift", line: 26)
+        #sourceLocation(file: "Sources/VKPassReborn/Tweak.x.swift", line: 70)
         private static let orion_sel1 = #selector(AudioSubscriptionCheckerHook.updateExpiresDate(_:musicSubscriptionPurchasedDuringSession:) as (AudioSubscriptionCheckerHook) -> (Int64, Bool) -> Void)
         #sourceLocation()
-        #sourceLocation(file: "Sources/VKPassReborn/Tweak.x.swift", line: 26)
+        #sourceLocation(file: "Sources/VKPassReborn/Tweak.x.swift", line: 70)
         private static var orion_orig1: @convention(c) (Target, Selector, Int64, Bool) -> Void = { target, _cmd, arg1, arg2 in
         #sourceLocation()
             (AudioSubscriptionCheckerHook(target: target).updateExpiresDate(_:musicSubscriptionPurchasedDuringSession:)(arg1, arg2))
         }
 
-        #sourceLocation(file: "Sources/VKPassReborn/Tweak.x.swift", line: 30)
+        #sourceLocation(file: "Sources/VKPassReborn/Tweak.x.swift", line: 74)
         private static let orion_sel2 = #selector(AudioSubscriptionCheckerHook.subscriptionActive as (AudioSubscriptionCheckerHook) -> () -> Bool)
         #sourceLocation()
-        #sourceLocation(file: "Sources/VKPassReborn/Tweak.x.swift", line: 30)
+        #sourceLocation(file: "Sources/VKPassReborn/Tweak.x.swift", line: 74)
         private static var orion_orig2: @convention(c) (Target, Selector) -> Bool = { target, _cmd in
         #sourceLocation()
             (AudioSubscriptionCheckerHook(target: target).subscriptionActive())
@@ -145,6 +212,7 @@ func orion_init() {
     if true {
         hooks += [
             AppDelegateHook._Glue.self,
+            ModernSettingsHook._Glue.self,
             ChatControllerHook._Glue.self,
             AudioSubscriptionCheckerHook._Glue.self
         ]
