@@ -2,9 +2,8 @@
 @interface AppDelegate : UIResponder <UIApplicationDelegate>
 @end
 
-//@interface VANavigationController : UINavigationController
-//
-//@end
+@interface VANavigationController : UINavigationController
+@end
 
 @interface VAViewController: UIViewController
 @end
@@ -89,6 +88,27 @@
 - (long long)VKMTableStyle;
 - (id)backgroundDecorationStrategy;
 - (id)initWithMain:(id)arg1 andModel:(id)arg2;
+@end
+
+@interface VKMLiveController : VKMTableController
+@end
+
+@interface MenuProfileView : UIView
+@end
+
+@interface SideMenuHeaderView : UIView
+@property(retain, nonatomic) MenuProfileView *profileView;
+@end
+
+@interface SideMenuView : UIView
+@property(retain, nonatomic) SideMenuHeaderView *menuHeaderView;
+@end
+
+
+@interface SideMenuViewController : VKMLiveController
+- (double)tableView:(id)arg1 heightForHeaderInSection:(long long)arg2;
+- (id)tableView:(id)arg1 viewForHeaderInSection:(long long)arg2;
+- (void)setupBottomButton;
 @end
 
 @interface BaseSettingsController : VKMTableController
@@ -219,4 +239,26 @@
 - (void)viewDidLoad;
 - (void)notificationActivity:(id)arg1;
 - (id)initWithMain:(id)arg1 andModel:(id)arg2;
+@end
+
+@interface FeedController : VKMLiveController
+@end
+
+@interface ProfileWallController : FeedController
+@end
+
+@interface UserWallController : ProfileWallController
+@property(retain, nonatomic) UIBarButtonItem *qrButton;
+@property(retain, nonatomic) VANavigationController *navigationController;
+@end
+
+@interface SelfWallController : UserWallController
+@end
+
+@interface BaseSectionedSettingsController : BaseSettingsController
+@end
+
+@interface AboutViewController : BaseSectionedSettingsController
+- (void)tableView:(id)arg1 didSelectRowAtIndexPath:(id)arg2;
+- (id)cellTitleForCell:(unsigned long long)arg1;
 @end

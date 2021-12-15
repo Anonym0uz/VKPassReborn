@@ -28,7 +28,9 @@ class VKPassPrefsViewController: UIViewController {
                                   item: navigationItem,
                                   navigationTitle: "VKPassPreferences")
         let closeButton = UIBarButtonItem(title: "Close", style: .plain, target: self, action: #selector(closeFunc))
+        let reloadButton = UIBarButtonItem(barButtonSystemItem: .refresh, target: self, action: #selector(reloadSettings))
         navigationItem.leftBarButtonItems = [closeButton]
+        navigationItem.rightBarButtonItems = [reloadButton]
         view.backgroundColor = .white
         tableView = UITableView(frame: .zero, style: .plain)
         tableView.translatesAutoresizingMaskIntoConstraints = false
@@ -71,9 +73,23 @@ extension VKPassPrefsViewController: UITableViewDelegate, UITableViewDataSource 
         return 0
     }
     
+    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        if let groups = groups {
+            return groups[section].configurator.headerTitle
+        }
+        return nil
+    }
+    
+    func tableView(_ tableView: UITableView, titleForFooterInSection section: Int) -> String? {
+        if let groups = groups {
+            return groups[section].configurator.footerTitle
+        }
+        return nil
+    }
+    
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         if let cell = tableView.dequeueReusableCell(withIdentifier: "String(describing: BasePreferencesCell.self)", for: indexPath) as? BasePreferencesCell {
-            cell.setModel(groups?[indexPath.section].items[indexPath.row] ?? Group.Item())
+            cell.setModel(groups?[indexPath.section].items[indexPath.row] ?? Group.Item(), group: groups?[indexPath.section] ?? Group(id: 1, configurator: .init(), items: []))
             return cell
         }
         
@@ -88,10 +104,19 @@ extension VKPassPrefsViewController: UITableViewDelegate, UITableViewDataSource 
             self.present(alert, animated: true)
         }
     }
+    
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        60
+    }
 }
 
 extension VKPassPrefsViewController {
     @objc func closeFunc() {
         dismiss(animated: true)
+    }
+    
+    @objc func reloadSettings() {
+        removePreferences()
+        tableView.reloadData()
     }
 }

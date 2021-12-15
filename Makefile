@@ -1,7 +1,7 @@
 TARGET := iphone:clang:latest:12.2
 INSTALL_TARGET_PROCESSES = VKClient
-#export THEOS_DEVICE_IP=192.168.31.8
-export THEOS_DEVICE_IP=10.1.1.176
+export THEOS_DEVICE_IP=192.168.31.8
+#export THEOS_DEVICE_IP=10.1.1.176
 
 include $(THEOS)/makefiles/common.mk
 

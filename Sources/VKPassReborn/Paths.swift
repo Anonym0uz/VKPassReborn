@@ -6,13 +6,35 @@
 //
 
 import Foundation
+import UIKit
 
 enum ItemType: String, Codable {
     case standart, subTitle, withSwitch, button
 }
 
-struct Group: Codable {
-    struct Item: Codable {
+struct GroupConfiguration: Codable, Hashable {
+    var headerTitle: String?
+//    var headerView: UIView?
+    var footerTitle: String?
+//    var footerView: UIView?
+    
+    enum CodingKeys: String, CodingKey {
+        case headerTitle
+        //case headerView
+        case footerTitle
+        //case footerView
+    }
+    
+    init(headerTitle: String? = nil, /*headerView: UIView? = nil, */footerTitle: String? = nil/*, footerView: UIView? = nil*/) {
+        self.headerTitle = headerTitle
+//        self.headerView = headerView
+        self.footerTitle = footerTitle
+//        self.footerView = footerView
+    }
+}
+
+struct Group: Codable, Hashable {
+    struct Item: Codable, Hashable {
         var image: String?
         var key: String
         var value: String
@@ -25,11 +47,18 @@ struct Group: Codable {
             self.type = type
         }
     }
-
+    var id: Int
+    var configurator: GroupConfiguration
     var items: [Item]
 
     enum CodingKeys: String, CodingKey {
+        case id
+        case configurator
         case items
+    }
+    
+    static func == (lhs: Group, rhs: Group) -> Bool {
+        return lhs.id == rhs.id
     }
 }
 
@@ -43,7 +72,7 @@ func getDocumentsDictionary() -> [Group] {
     } catch {
         // Handle error
         print(error)
-        return [Group(items: [])]
+        return [Group(id: 1, configurator: .init(), items: [])]
     }
 }
 

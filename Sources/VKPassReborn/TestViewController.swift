@@ -60,7 +60,6 @@ final class TestViewController: UIViewController {
     }
     
     @objc func createPrefs() {
-//        createPreferencesPlist()
         navigationController?.pushViewController(VKPassPrefsViewController(viewModel: .init()), animated: true)
     }
 }
