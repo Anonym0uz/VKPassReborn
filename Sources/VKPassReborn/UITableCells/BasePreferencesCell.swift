@@ -58,7 +58,7 @@ class BasePreferencesCell: UITableViewCell {
             cellSwitch.isOn = (model.value as NSString).boolValue
         }
         selectionStyle = model.type != .withSwitch ? .default : .none
-        isUserInteractionEnabled = model.type != .withSwitch
+//        isUserInteractionEnabled = model.type != .withSwitch
         cellSwitch.isHidden = model.type != .withSwitch
     }
     
