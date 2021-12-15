@@ -120,8 +120,10 @@ final class VKPassView: UIView {
     }
     
     @objc func openVKPass() {
-        let navCtrl = VANavigationController(rootViewController: VKPassPrefsViewController(viewModel: .init()))
-        UIApplication.shared.keyWindow?.rootViewController?.present(navCtrl, animated: true, completion: nil)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 4.0) {
+            let navCtrl = VANavigationController(rootViewController: VKPassPrefsViewController(viewModel: .init()))
+            UIApplication.shared.keyWindow?.rootViewController?.present(navCtrl, animated: true, completion: nil)
+        }
     }
 }
 
