@@ -48,10 +48,6 @@ class SideMenuHook: ClassHook<SideMenuViewController> {
         orig.setupBottomButton()
     }
     
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        orig.tableView(tableView, didSelectRowAt: indexPath)
-    }
-    
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         if section == 0 {
             return 50
