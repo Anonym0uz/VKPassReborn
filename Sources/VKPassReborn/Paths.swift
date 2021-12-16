@@ -35,12 +35,14 @@ struct GroupConfiguration: Codable, Hashable {
 
 struct Group: Codable, Hashable {
     struct Item: Codable, Hashable {
+        var title: String?
         var image: String?
         var key: String
         var value: String
         var type: ItemType
         
-        init(image: String? = nil, key: String? = nil, value: String? = nil, type: ItemType = .standart) {
+        init(title: String? = nil, image: String? = nil, key: String? = nil, value: String? = nil, type: ItemType = .standart) {
+            self.title = title
             self.image = image
             self.key = key ?? ""
             self.value = value ?? ""

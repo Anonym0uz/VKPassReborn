@@ -23,8 +23,12 @@ class BasePreferencesCell: UITableViewCell {
         cellSwitch.onTintColor = .cyan
         return cellSwitch
     }()
+    
     var group: Group?
+    
     var model: Group.Item?
+    
+    private var titleConstraints: [NSLayoutConstraint] = []
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -39,11 +43,13 @@ class BasePreferencesCell: UITableViewCell {
         contentView.addSubview(titleLabel)
         contentView.addSubview(cellSwitch)
         cellSwitch.addTarget(self, action: #selector(changeSwitch(_:)), for: .valueChanged)
-        contentView.addConstraints([
+        titleConstraints = [
             titleLabel.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
             titleLabel.leftAnchor.constraint(equalTo: contentView.leftAnchor, constant: 15),
-            titleLabel.rightAnchor.constraint(equalTo: contentView.rightAnchor, constant: -40),
-            
+            titleLabel.rightAnchor.constraint(equalTo: contentView.rightAnchor, constant: -40)
+        ]
+        contentView.addConstraints(titleConstraints)
+        contentView.addConstraints([
             cellSwitch.rightAnchor.constraint(equalTo: contentView.rightAnchor, constant: -10),
             cellSwitch.centerYAnchor.constraint(equalTo: titleLabel.centerYAnchor),
             cellSwitch.widthAnchor.constraint(equalToConstant: 60)
@@ -53,13 +59,16 @@ class BasePreferencesCell: UITableViewCell {
     func setModel(_ model: Group.Item, group: Group) {
         self.group = group
         self.model = model
-        titleLabel.text = model.key
+        titleLabel.text = model.title
         if model.type == .withSwitch {
             cellSwitch.isOn = (model.value as NSString).boolValue
         }
         selectionStyle = model.type != .withSwitch ? .default : .none
 //        isUserInteractionEnabled = model.type != .withSwitch
         cellSwitch.isHidden = model.type != .withSwitch
+    }
+    
+    private func changeType(_ type: ItemType) {
     }
     
     @objc func changeSwitch(_ value: UISwitch) {

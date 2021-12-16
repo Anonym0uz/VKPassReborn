@@ -103,12 +103,19 @@
 @interface SideMenuView : UIView
 @property(retain, nonatomic) SideMenuHeaderView *menuHeaderView;
 @end
-
+@class SideMenuViewController;
+@protocol SideMenuViewControllerDelegate <NSObject>
+- (void)sideMenuViewController:(SideMenuViewController *)arg1 requirePresentViewController:(UIViewController *)arg2 modal:(_Bool)arg3;
+@end
 
 @interface SideMenuViewController : VKMLiveController
+{
+    id <SideMenuViewControllerDelegate> _delegate;
+}
+@property(nonatomic) __weak id <SideMenuViewControllerDelegate> delegate;
 - (double)tableView:(id)arg1 heightForHeaderInSection:(long long)arg2;
 - (id)tableView:(id)arg1 viewForHeaderInSection:(long long)arg2;
-- (void)setupBottomButton;
+- (void)qrButtonDidClick:(id)arg1;
 @end
 
 @interface BaseSettingsController : VKMTableController
@@ -261,4 +268,10 @@
 @interface AboutViewController : BaseSectionedSettingsController
 - (void)tableView:(id)arg1 didSelectRowAtIndexPath:(id)arg2;
 - (id)cellTitleForCell:(unsigned long long)arg1;
+@end
+
+
+@interface VKSideMenuContainerController : VKMController
+- (void)hideSideMenu;
+- (void)showSideMenu;
 @end

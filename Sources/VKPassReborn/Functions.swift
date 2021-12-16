@@ -11,10 +11,10 @@ import UIKit
 func defaultPreferences() -> [Group] {
     var dictionaryStandart = [Group]()
     dictionaryStandart.append(.init(id: 1, configurator: .init(headerTitle: "Test section 1"), items: [
-        .init(key: "test", value: "true", type: .standart)
+        .init(title: "Show alert on launch", key: "mainAlertEnabled", value: "false", type: .withSwitch)
     ]))
-    dictionaryStandart.append(.init(id: 2, configurator: .init(headerTitle: "Test section 2", footerTitle: "Test section footer"), items: [
-        .init(key: "test1", value: "true", type: .withSwitch)
+    dictionaryStandart.append(.init(id: 2, configurator: .init(headerTitle: "Test section 2"), items: [
+        .init(title: "Unlock music cache & subscription", key: "subscriptionActive", value: "false", type: .withSwitch)
     ]))
     return dictionaryStandart
 }
@@ -66,6 +66,20 @@ func changePreferences(_ group: Group, model: Group.Item) {
         }
     }
     createPreferencesPlist(save: true, new: prefs)
+}
+
+func getPreferences(for key: String) -> String {
+    let prefs = getDocumentsDictionary()
+    var value = ""
+    prefs.forEach({ group in
+        group.items.forEach({ item in
+            if item.key == key {
+                value = item.value
+                return
+            }
+        })
+    })
+    return value
 }
 
 func setupNavigationController(_ controller: UINavigationController!,

@@ -117,6 +117,10 @@ extension VKPassPrefsViewController {
     
     @objc func reloadSettings() {
         removePreferences()
-        tableView.reloadData()
+        let alert = UIAlertController(title: "VKPassReborn", message: "Preferences has been reloaded.", preferredStyle: .alert)
+        alert.addAction(.init(title: "OK", style: .cancel, handler: { _ in
+            self.tableView.reloadData()
+        }))
+        present(alert, animated: true)
     }
 }
