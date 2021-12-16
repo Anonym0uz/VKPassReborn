@@ -39,13 +39,23 @@ struct Group: Codable, Hashable {
         var image: String?
         var key: String
         var value: String
+        var disabled: Bool
+        var isHidden: Bool
         var type: ItemType
         
-        init(title: String? = nil, image: String? = nil, key: String? = nil, value: String? = nil, type: ItemType = .standart) {
+        init(title: String? = nil,
+             image: String? = nil,
+             key: String? = nil,
+             value: String? = nil,
+             disabled: Bool = false,
+             isHidden: Bool = false,
+             type: ItemType = .standart) {
             self.title = title
             self.image = image
             self.key = key ?? ""
             self.value = value ?? ""
+            self.disabled = disabled
+            self.isHidden = isHidden
             self.type = type
         }
     }

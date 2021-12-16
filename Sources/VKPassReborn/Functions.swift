@@ -11,7 +11,10 @@ import UIKit
 func defaultPreferences() -> [Group] {
     var dictionaryStandart = [Group]()
     dictionaryStandart.append(.init(id: 1, configurator: .init(headerTitle: "Test section 1"), items: [
-        .init(title: "Show alert on launch", key: "mainAlertEnabled", value: "false", type: .withSwitch)
+        .init(title: "Show alert on launch", key: "mainAlertEnabled", value: "false", type: .withSwitch),
+        .init(title: "This is test button", key: "mainButton", type: .button),
+        .init(title: "Cell maybe disabled", key: "test", disabled: Bool.random(), type: .standart),
+        .init(title: "Cell maybe hidden", key: "test", isHidden: Bool.random(), type: .standart),
     ]))
     dictionaryStandart.append(.init(id: 2, configurator: .init(headerTitle: "Test section 2"), items: [
         .init(title: "Unlock music cache & subscription", key: "subscriptionActive", value: "false", type: .withSwitch)

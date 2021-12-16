@@ -68,7 +68,7 @@ extension VKPassPrefsViewController: UITableViewDelegate, UITableViewDataSource 
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         if let groups = groups {
-            return groups[section].items.count
+            return groups[section].items.filter({ $0.isHidden == false }).count
         }
         return 0
     }
@@ -99,9 +99,12 @@ extension VKPassPrefsViewController: UITableViewDelegate, UITableViewDataSource 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         if let groups = groups {
-            let alert = UIAlertController(title: "Test", message: groups[indexPath.section].items[indexPath.row].key, preferredStyle: .alert)
-            alert.addAction(.init(title: "OK", style: .cancel))
-            self.present(alert, animated: true)
+            let item = groups[indexPath.section].items[indexPath.row]
+            if item.type == .button || item.type == .standart {
+                let alert = UIAlertController(title: "Test", message: groups[indexPath.section].items[indexPath.row].key, preferredStyle: .alert)
+                alert.addAction(.init(title: "OK", style: .cancel))
+                self.present(alert, animated: true)
+            }
         }
     }
     
@@ -119,7 +122,7 @@ extension VKPassPrefsViewController {
         removePreferences()
         let alert = UIAlertController(title: "VKPassReborn", message: "Preferences has been reloaded.", preferredStyle: .alert)
         alert.addAction(.init(title: "OK", style: .cancel, handler: { _ in
-            self.tableView.reloadData()
+            self.viewModel.getData()
         }))
         present(alert, animated: true)
     }

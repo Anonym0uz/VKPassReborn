@@ -14,6 +14,7 @@ class BasePreferencesCell: UITableViewCell {
         label.translatesAutoresizingMaskIntoConstraints = false
         label.textColor = .white
         label.textAlignment = .left
+        label.adjustsFontSizeToFitWidth = true
         return label
     }()
     
@@ -63,9 +64,13 @@ class BasePreferencesCell: UITableViewCell {
         if model.type == .withSwitch {
             cellSwitch.isOn = (model.value as NSString).boolValue
         }
-        selectionStyle = model.type != .withSwitch ? .default : .none
-//        isUserInteractionEnabled = model.type != .withSwitch
+        if model.type == .withSwitch || model.type == .button {
+            selectionStyle = .none
+        } else {
+            selectionStyle = .default
+        }
         cellSwitch.isHidden = model.type != .withSwitch
+        isUserInteractionEnabled = !model.disabled
     }
     
     private func changeType(_ type: ItemType) {
