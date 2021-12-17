@@ -264,7 +264,7 @@ public class CVPasscodeController: UIViewController {
             updateBackspaceButtonTitle()
             if currentInput.count == numberOfDigits {
                 evaluating = true
-                DispatchQueue.main.asyncAfter(deadline: .now() + Double(Int64(NSEC_PER_MSEC)) * 200, execute: {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0, execute: {
                     self.evaluatePasscode()
                     self.evaluating = false
                 })
