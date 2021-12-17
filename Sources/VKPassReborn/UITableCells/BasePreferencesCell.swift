@@ -12,7 +12,11 @@ class BasePreferencesCell: UITableViewCell {
     var titleLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.textColor = .white
+        if #available(iOS 13.0, *) {
+            label.textColor = .label
+        } else {
+            label.textColor = .black
+        }
         label.textAlignment = .left
         label.adjustsFontSizeToFitWidth = true
         return label

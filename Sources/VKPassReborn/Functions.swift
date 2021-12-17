@@ -7,6 +7,9 @@
 
 import Foundation
 import UIKit
+import os.log
+
+let tweakResourceFolder: String = "/private/var/mobile/Library/Application Support/ru.anonz.vkpassreborn/Documents/ru.anonz.vkpassreborn.bundle"
 
 func defaultPreferences() -> [Group] {
     var dictionaryStandart = [Group]()
@@ -22,6 +25,28 @@ func defaultPreferences() -> [Group] {
     return dictionaryStandart
 }
 
+func partialMigrations() {
+    var prefs = getDocumentsDictionary()
+    prefs.enumerated().forEach({ index, group in
+        if group.configurator.headerTitle == "Test section 1" {
+            prefs[index].configurator.headerTitle = "Main"
+        }
+        if group.configurator.headerTitle == "Test section 2" {
+            prefs[index].configurator.headerTitle = "Other"
+        }
+    })
+    checkElements(prefs)
+}
+
+private func checkElements(_ pref: [Group]) {
+    let prefs = pref
+    var newPrefs = prefs
+    prefs.enumerated().forEach({ groupIndex, group in
+        newPrefs[groupIndex].items.removeAll(where: { $0.key == "test" })
+    })
+    createPreferencesPlist(save: true, new: newPrefs)
+}
+
 func checkPreferences() {
     let fileManager = FileManager.default
     
@@ -30,7 +55,9 @@ func checkPreferences() {
     
     if(!fileManager.fileExists(atPath: path)) {
         createPreferencesPlist()
-    } else {}
+    } else {
+        partialMigrations()
+    }
 }
 
 func createPreferencesPlist(save: Bool = false, new: [Group] = []) {
@@ -60,6 +87,23 @@ func removePreferences() {
         createPreferencesPlist()
     } else {}
 }
+
+//func saveImage() {
+//    let documentsDirectoryURL = try! FileManager().url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
+//    // create a name for your image
+//    let fileURL = documentsDirectoryURL.appendingPathComponent("Savedframe.png")
+//
+//    if !FileManager.default.fileExists(atPath: fileURL.path) {
+//        do {
+//            try UIImagePNGRepresentation(imageView.image!)!.write(to: fileURL)
+//                print("Image Added Successfully")
+//            } catch {
+//                print(error)
+//            }
+//        } else {
+//            print("Image Not Added")
+//    }
+//}
 
 func changePreferences(_ group: Group, model: Group.Item) {
     var prefs = getDocumentsDictionary()

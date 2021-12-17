@@ -118,6 +118,11 @@
 - (void)qrButtonDidClick:(id)arg1;
 @end
 
+@interface _TtC3vkm22PeerListViewController : UITableViewController <UITableViewDragDelegate, UITableViewDropDelegate>
+- (id)tableView:(id)arg1 leadingSwipeActionsConfigurationForRowAtIndexPath:(id)arg2;
+- (id)tableView:(id)arg1 cellForRowAtIndexPath:(id)arg2;
+@end
+
 @interface BaseSettingsController : VKMTableController
 {
 }
