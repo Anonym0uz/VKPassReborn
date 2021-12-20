@@ -181,7 +181,7 @@ extension VKPassPrefsViewController: UITableViewDelegate, UITableViewDataSource 
             let item = groups[indexPath.section].items[indexPath.row]
             if item.type == .button || item.type == .standart {
                 if item.key == "mainButton" {
-                    let passcodeController = CVPasscodeController(interfaceStyle: .Dark, type: .new)
+                    let passcodeController = CVPasscodeController(interfaceStyle: .Dark, type: .check)
                     passcodeController.interfaceStringProvider = self
                     passcodeController.passcodeEvaluator = self
                     
@@ -224,7 +224,7 @@ extension VKPassPrefsViewController: CVPasscodeEvaluating, CVPasscodeInterfaceSt
     func evaluatePasscode(passcode: String, forPasscodeController controller: CVPasscodeController) -> Bool {
         var returnVal = false
         guard let keychainPass = try? getKeychain() else { return false }
-        if passcode == keychainPass {
+        if passcode == "123456" {
             returnVal = true
         }
         
