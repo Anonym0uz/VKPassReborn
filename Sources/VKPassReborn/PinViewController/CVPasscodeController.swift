@@ -8,6 +8,7 @@
 
 import UIKit
 import AudioToolbox
+import LocalAuthentication
 
 public enum CVPasscodeInterfaceStyle {
     case Dark
@@ -16,10 +17,18 @@ public enum CVPasscodeInterfaceStyle {
 
 
 public enum CVPasscodeInterfaceStringType {
+    case New
     case InitialHint
     case WrongHint
     case Cancel
     case Backspace
+}
+
+public enum CVPasscodeInterfaceType {
+    case new
+    case check
+    case change
+    case delete
 }
 
 
@@ -34,6 +43,9 @@ public protocol CVPasscodeEvaluating {
     
     // This will be called after the designated digits finished being inputted, if true was returned then the controller will dismiss, otherwise, the device will vibrate and there will be some visual feedback to tell user the passcode was wrong.
     func evaluatePasscode(passcode: String, forPasscodeController controller: CVPasscodeController) -> Bool
+    
+    // This will be called after the designated digits finished being inputted, if true was returned then the controller will dismiss, otherwise, the device will vibrate and there will be some visual feedback to tell user the passcode was wrong.
+    func evaluatePasscode(passcode: String, forPasscodeController controller: CVPasscodeController, type: CVPasscodeInterfaceType)
     
     // This will be called after user tapped the cancel button and controller has dismissed.
     func passcodeControllerDidCancel(controller: CVPasscodeController)
@@ -55,9 +67,11 @@ public class CVPasscodeController: UIViewController {
     public var passcodeEvaluator: CVPasscodeEvaluating! // This property must be set to tell the controller whether the passcode user input is valid.
     
     public let interfaceStyle: CVPasscodeInterfaceStyle // The getter of current interface style.
+    private let passcodeType: CVPasscodeInterfaceType
     
-    public init(interfaceStyle: CVPasscodeInterfaceStyle) {
+    public init(interfaceStyle: CVPasscodeInterfaceStyle, type: CVPasscodeInterfaceType = .check) {
         self.interfaceStyle = interfaceStyle
+        self.passcodeType = type
         super.init(nibName: nil, bundle: nil)
         
         modalPresentationStyle = .custom
@@ -66,11 +80,13 @@ public class CVPasscodeController: UIViewController {
     
     public override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
         self.interfaceStyle = .Dark
+        self.passcodeType = .check
         super.init(nibName: nil, bundle: nil)
     }
     
     public required init?(coder aDecoder: NSCoder) {
         self.interfaceStyle = .Dark
+        self.passcodeType = .check
         super.init(coder: aDecoder)
     }
     
@@ -98,21 +114,24 @@ public class CVPasscodeController: UIViewController {
         
         hintLabel.translatesAutoresizingMaskIntoConstraints = false
         hintLabel.font = UIFont.systemFont(ofSize: 19)
-        hintLabel.textColor = interfaceStyle == .Dark ? whiteColor : blackColor
-        hintLabel.text = interfaceStringProvider?.interfaceStringOfType(type: .InitialHint, forPasscodeController: self) ?? "Enter Passcode"
+        hintLabel.text = interfaceStringProvider?.interfaceStringOfType(type: (passcodeType != .new) ? .InitialHint : .New, forPasscodeController: self) ?? "Enter Passcode"
         
-        backspaceButton.tintColor = interfaceStyle == .Dark ? whiteColor : blackColor
+        if #available(iOS 13.0, *) {
+            hintLabel.textColor = .label
+            backspaceButton.tintColor = .label
+        } else {
+            hintLabel.textColor = interfaceStyle == .Dark ? whiteColor : blackColor
+            backspaceButton.tintColor = interfaceStyle == .Dark ? whiteColor : blackColor
+        }
         backspaceButton.translatesAutoresizingMaskIntoConstraints = false
-        backspaceButton.addTarget(self, action: #selector(cancel), for: .touchUpInside)
-        updateBackspaceButtonTitle()
+        backspaceButton.addTarget(self, action: #selector(dismissView), for: .touchUpInside)
         
-        let interfaceVisualEffect = UIBlurEffect(style: self.interfaceStyle == .Dark ? .dark : .extraLight)
+        let interfaceVisualEffect = UIBlurEffect(style: .prominent)
         
         keypad.translatesAutoresizingMaskIntoConstraints = false
-        keypad.keypadCells.forEach { cell in
-            cell.color = self.interfaceStyle == .Dark ? whiteColor : blackColor
-            cell.interfaceVisualEffect = interfaceVisualEffect
-            cell.addTarget(self, action: #selector(cellDidTap(sender:)), for: .touchDown)
+        keypad.action = { [weak self] button in
+            guard let self = self else { return }
+            self.cellDidTap(sender: button)
         }
         
         indicator.translatesAutoresizingMaskIntoConstraints = false
@@ -123,106 +142,33 @@ public class CVPasscodeController: UIViewController {
         view.addSubview(keypad)
         view.addSubview(indicator)
         
-        view.addConstraint(NSLayoutConstraint(
-            item: hintLabel,
-            attribute: .centerY,
-            relatedBy: .equal,
-            toItem: view,
-            attribute: .centerY,
-            multiplier: 1.0,
-            constant: -230)
-        )
-        
-        view.addConstraint(NSLayoutConstraint(
-            item: hintLabel,
-            attribute: .centerX,
-            relatedBy: .equal,
-            toItem: view,
-            attribute: .centerX,
-            multiplier: 1.0,
-            constant: 0)
-        )
-        
-        view.addConstraint(NSLayoutConstraint(
-            item: backspaceButton,
-            attribute: .bottom,
-            relatedBy: .equal,
-            toItem: view,
-            attribute: .bottom,
-            multiplier: 1.0,
-            constant: -35)
-        )
-        
-        view.addConstraint(NSLayoutConstraint(
-            item: backspaceButton,
-            attribute: .centerX,
-            relatedBy: .equal,
-            toItem: view,
-            attribute: .centerX,
-            multiplier: 1.0,
-            constant: 0)
-        )
-        
-        view.addConstraint(NSLayoutConstraint(
-            item: keypad,
-            attribute: .centerY,
-            relatedBy: .equal,
-            toItem: view,
-            attribute: .centerY,
-            multiplier: 1.0,
-            constant: 50)
-        )
-        
-        view.addConstraint(NSLayoutConstraint(
-            item: keypad,
-            attribute: .centerX,
-            relatedBy: .equal,
-            toItem: view,
-            attribute: .centerX,
-            multiplier: 1.0,
-            constant: 0)
-        )
-        
-        view.addConstraint(NSLayoutConstraint(
-            item: keypad,
-            attribute: .width,
-            relatedBy: .equal,
-            toItem: nil,
-            attribute: .notAnAttribute,
-            multiplier: 1.0,
-            constant: 275)
-        )
-        
-        view.addConstraint(NSLayoutConstraint(
-            item: keypad,
-            attribute: .height,
-            relatedBy: .equal,
-            toItem: nil,
-            attribute: .notAnAttribute,
-            multiplier: 1.0,
-            constant: 375)
-        )
-        
-        view.addConstraint(NSLayoutConstraint(
-            item: indicator,
-            attribute: .top,
-            relatedBy: .equal,
-            toItem: hintLabel,
-            attribute: .bottom,
-            multiplier: 1.0,
-            constant: 15)
-        )
-        
-        view.addConstraint(NSLayoutConstraint(
-            item: indicator,
-            attribute: .centerX,
-            relatedBy: .equal,
-            toItem: view,
-            attribute: .centerX,
-            multiplier: 1.0,
-            constant: 0)
-        )
+        view.addConstraints([
+            
+            keypad.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            keypad.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: 50),
+            keypad.widthAnchor.constraint(equalToConstant: 275),
+            keypad.heightAnchor.constraint(equalToConstant: 375),
+            
+            indicator.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            indicator.bottomAnchor.constraint(equalTo: keypad.topAnchor, constant: -30),
+            
+            hintLabel.bottomAnchor.constraint(equalTo: indicator.topAnchor, constant: -20),
+            hintLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            
+            backspaceButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            backspaceButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -35)
+        ])
     }
+    
+    public override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        if getBiometricType() != .none && passcodeType == .check {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                self.evaluteAuthentification()
+            }
+        }
+    }
+    
     public override var preferredStatusBarStyle: UIStatusBarStyle {
         return interfaceStyle == .Dark ? .lightContent : .default
     }
@@ -243,13 +189,54 @@ public class CVPasscodeController: UIViewController {
     
     private func updateBackspaceButtonTitle() {
         let title: String
-        if currentInput.count == 0 {
-            title = interfaceStringProvider?.interfaceStringOfType(type: .Cancel, forPasscodeController: self) ?? "Cancel"
-        } else {
-            title = interfaceStringProvider?.interfaceStringOfType(type: .Backspace, forPasscodeController: self) ?? "Delete"
-        }
+        title = interfaceStringProvider?.interfaceStringOfType(type: .Cancel, forPasscodeController: self) ?? "Cancel"
         
         backspaceButton.setTitle(title, for: .normal)
+    }
+    
+    private func updateHintText() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+            UIView.transition(with: self.hintLabel,
+                              duration: 0.25,
+                              options: .transitionCrossDissolve) {
+                self.hintLabel.text = self.interfaceStringProvider?.interfaceStringOfType(type: .InitialHint, forPasscodeController: self) ?? "Enter Passcode"
+            } completion: { _ in }
+        }
+    }
+    
+    private func evaluteAuthentification() {
+        let context = LAContext()
+        var error: NSError?
+        
+        if context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) {
+            let reason = "VKPassReborn"
+            
+            context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reason) {
+                [weak self] success, authenticationError in
+                
+                DispatchQueue.main.async {
+                    if success {
+                        self?.authByBiometric()
+                    } else {
+                        self?.authByBiometric(false)
+                    }
+                }
+            }
+        } else {
+            // no biometry
+        }
+    }
+    
+    private func authByBiometric(_ need: Bool = true) {
+        if need {
+            indicator.setNumberOfFilledDot(number: self.passcodeEvaluator.numberOfDigitsInPasscodeForPasscodeController(controller: self))
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                self.dismiss(animated: true, completion: nil)
+            }
+        } else {
+            currentInput = ""
+            indicator.setNumberOfFilledDot(number: 0)
+        }
     }
     
     @objc func cellDidTap(sender: AnyObject?) {
@@ -258,13 +245,24 @@ public class CVPasscodeController: UIViewController {
         }
         
         if let cell = sender as? CVKeypadCell {
+            
+            if let imgName = cell.image {
+                if imgName == "delete" {
+                    cancel()
+                    return
+                }
+                if imgName == "biometrics_face" || imgName == "biometrics_touch" {
+                    passcodeType == .check ? evaluteAuthentification() : nil
+                    return
+                }
+            }
+            guard cell.text != nil else { return }
             let digitString = cell.text!
             currentInput += digitString
             indicator.setNumberOfFilledDot(number: currentInput.count)
-            updateBackspaceButtonTitle()
             if currentInput.count == numberOfDigits {
                 evaluating = true
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0, execute: {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: {
                     self.evaluatePasscode()
                     self.evaluating = false
                 })
@@ -272,23 +270,31 @@ public class CVPasscodeController: UIViewController {
         }
     }
     
+    @objc private func dismissView() {
+        dismiss(animated: true, completion: nil)
+    }
+    
     @objc private func cancel() {
         if currentInput.count == 0 {
             dismiss(animated: true, completion: nil)
         } else {
-            currentInput = currentInput.substring(to: currentInput.endIndex)
+            currentInput = (currentInput.count != 1) ? currentInput.dropLast().description : ""
             indicator.setNumberOfFilledDot(number: currentInput.count)
-            updateBackspaceButtonTitle()
         }
     }
 
     private func evaluatePasscode() {
+        if passcodeType == .new {
+            passcodeEvaluator.evaluatePasscode(passcode: currentInput, forPasscodeController: self, type: .new)
+            dismiss(animated: true, completion: nil)
+            return
+        }
         if passcodeEvaluator.evaluatePasscode(passcode: currentInput, forPasscodeController: self) {
             dismiss(animated: true, completion: nil)
         } else {
             currentInput = ""
             indicator.setNumberOfFilledDot(number: 0)
-            updateBackspaceButtonTitle()
+            updateHintText()
             performRetryFeedback()
         }
     }
@@ -370,4 +376,28 @@ extension CVPasscodeController: UIViewControllerTransitioningDelegate {
         return CVPasscodePresentationController(presentedViewController: presented, presenting: presenting)
     }
     
+}
+
+// MARK: Checker
+func getBiometricType() -> BiometricType {
+    let authContext = LAContext()
+    if #available(iOS 11, *) {
+        let _ = authContext.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: nil)
+        switch(authContext.biometryType) {
+        case .none:
+            return .none
+        case .touchID:
+            return .touch
+        case .faceID:
+            return .face
+        }
+    } else {
+        return authContext.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: nil) ? .touch : .none
+    }
+}
+
+enum BiometricType {
+    case none
+    case touch
+    case face
 }

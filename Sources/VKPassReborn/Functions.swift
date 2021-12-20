@@ -9,17 +9,14 @@ import Foundation
 import UIKit
 import os.log
 
-let tweakResourceFolder: String = "/private/var/mobile/Library/Application Support/ru.anonz.vkpassreborn/Documents/ru.anonz.vkpassreborn.bundle"
+let tweakResourceFolder: String = "/private/var/mobile/Library/Application Support/ru.anonz.vkpassreborn.bundle"
 
 func defaultPreferences() -> [Group] {
     var dictionaryStandart = [Group]()
-    dictionaryStandart.append(.init(id: 1, configurator: .init(headerTitle: "Test section 1"), items: [
-        .init(title: "Show alert on launch", key: "mainAlertEnabled", value: "false", type: .withSwitch),
+    dictionaryStandart.append(.init(id: 1, configurator: .init(headerTitle: "Main"), items: [
         .init(title: "This is test button", key: "mainButton", type: .button),
-        .init(title: "Cell maybe disabled", key: "test", disabled: Bool.random(), type: .standart),
-        .init(title: "Cell maybe hidden", key: "test", isHidden: Bool.random(), type: .standart),
     ]))
-    dictionaryStandart.append(.init(id: 2, configurator: .init(headerTitle: "Test section 2"), items: [
+    dictionaryStandart.append(.init(id: 2, configurator: .init(headerTitle: "Other"), items: [
         .init(title: "Unlock music cache & subscription", key: "subscriptionActive", value: "false", type: .withSwitch)
     ]))
     return dictionaryStandart
@@ -42,7 +39,19 @@ private func checkElements(_ pref: [Group]) {
     let prefs = pref
     var newPrefs = prefs
     prefs.enumerated().forEach({ groupIndex, group in
-        newPrefs[groupIndex].items.removeAll(where: { $0.key == "test" })
+        newPrefs[groupIndex].items.removeAll(where: { $0.key == "test" || $0.key == "mainAlertEnabled" })
+        if newPrefs[groupIndex].id == 1 {
+            if newPrefs[groupIndex].items.filter({ $0.key == "useBiometrics" ||
+                $0.key == "deletePasscode" ||
+                $0.key == "changePasscode" }).isEmpty {
+                let passItems: [Group.Item] = [
+                    .init(title: "Use biometrics", key: "useBiometrics", disabled: false, isHidden: true, type: .withSwitch),
+                    .init(title: "Change passcode", key: "changePasscode", disabled: false, isHidden: true, type: .button),
+                    .init(title: "Delete passcode", key: "deletePasscode", disabled: false, isHidden: true, type: .button)
+                ]
+                newPrefs[groupIndex].items.append(contentsOf: passItems)
+            }
+        }
     })
     createPreferencesPlist(save: true, new: newPrefs)
 }
@@ -104,6 +113,24 @@ func removePreferences() {
 //            print("Image Not Added")
 //    }
 //}
+
+func needChangePasscodePrefs(_ hide: Bool) {
+    
+    let prefs = getDocumentsDictionary()
+    prefs.enumerated().forEach({ groupIndex, group in
+        if prefs[groupIndex].id == 1 {
+            let pref = group.items.filter({ $0.key == "useBiometrics" ||
+                $0.key == "deletePasscode" ||
+                $0.key == "changePasscode" })
+            let currentPref = pref.map({ model -> Group.Item in
+                var newModel = model
+                newModel.isHidden = hide
+                return newModel
+            })
+            currentPref.forEach({ changePreferences(group, model: $0) })
+        }
+    })
+}
 
 func changePreferences(_ group: Group, model: Group.Item) {
     var prefs = getDocumentsDictionary()

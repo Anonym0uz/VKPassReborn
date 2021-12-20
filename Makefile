@@ -8,7 +8,8 @@ include $(THEOS)/makefiles/common.mk
 TWEAK_NAME = VKPassReborn
 
 BUNDLE_NAME = ru.anonz.vkpassreborn
-ru.anonz.vkpassreborn_INSTALL_PATH = /private/var/mobile/Library/Application Support/$(BUNDLE_NAME)/Documents
+ru.anonz.vkpassreborn_INSTALL_PATH = /private/var/mobile/Library/Application Support
+#$(TWEAK_NAME)_CODESIGN_FLAGS = -Sentitlements.xml
 VKPassReborn_FILES = $(shell find Sources/VKPassReborn -name '*.swift') $(shell find Sources/VKPassRebornC -name '*.m' -o -name '*.c' -o -name '*.mm' -o -name '*.cpp')
 VKPassReborn_SWIFTFLAGS = -ISources/VKPassRebornC/include
 VKPassReborn_CFLAGS = -fobjc-arc -ISources/VKPassRebornC/include

@@ -6,6 +6,64 @@
 //
 
 import UIKit
+import Security
+
+struct Credentials {
+    var username: String
+    var password: String
+}
+enum KeychainError: Error {
+    case noPassword
+    case unexpectedPasswordData
+    case unhandledError(status: OSStatus)
+}
+
+func deletePassword(account: String) throws {
+    let query: [String: AnyObject] = [
+        kSecAttrAccount as String: account as AnyObject,
+        kSecClass as String: kSecClassGenericPassword
+    ]
+    
+    let status = SecItemDelete(query as CFDictionary)
+    
+    guard status == errSecSuccess else {
+        throw KeychainError.unhandledError(status: status)
+    }
+}
+
+private func storeKeychain(username: String, password: String) throws -> Any? {
+    let credentials = Credentials.init(username: username, password: password)
+    let data = credentials.password.data(using: .utf8)!
+
+    let query: [String: Any] = [kSecClass as String:  kSecClassGenericPassword,
+                                kSecAttrAccount as String: username,
+                                kSecValueData as String: data]
+    let status = SecItemAdd(query as CFDictionary, nil)
+    guard status == errSecSuccess else {
+        throw KeychainError.unhandledError(status: status) }
+    return status
+}
+
+private func getKeychain() throws -> String {
+    let query: [String: Any] = [kSecClass as String: kSecClassGenericPassword,
+                                kSecMatchLimit as String: kSecMatchLimitOne,
+                                kSecReturnAttributes as String: true,
+                                kSecReturnData as String: true]
+    var item: CFTypeRef?
+    let status = SecItemCopyMatching(query as CFDictionary, &item)
+    guard status != errSecItemNotFound else { throw KeychainError.noPassword }
+    guard status == errSecSuccess else { throw KeychainError.unhandledError(status: status) }
+    
+    guard let existingItem = item as? [String : Any],
+          let passwordData = existingItem[kSecValueData as String] as? Data,
+          let password = String(data: passwordData, encoding: String.Encoding.utf8),
+          let account = existingItem[kSecAttrAccount as String] as? String
+    else {
+        throw KeychainError.unexpectedPasswordData
+    }
+    _ = Credentials(username: account, password: password)
+    return password
+}
 
 class VKPassPrefsViewController: UIViewController {
     
@@ -27,7 +85,7 @@ class VKPassPrefsViewController: UIViewController {
         setupNavigationController(navigationController,
                                   item: navigationItem,
                                   navigationTitle: "VKPassPreferences")
-        let closeButton = UIBarButtonItem(title: "Close", style: .plain, target: self, action: #selector(closeFunc))
+        let closeButton = UIBarButtonItem(title: "X", style: .plain, target: self, action: #selector(closeFunc))
         let reloadButton = UIBarButtonItem(barButtonSystemItem: .refresh, target: self, action: #selector(reloadSettings))
         navigationItem.leftBarButtonItems = [closeButton]
         navigationItem.rightBarButtonItems = [reloadButton]
@@ -123,7 +181,7 @@ extension VKPassPrefsViewController: UITableViewDelegate, UITableViewDataSource 
             let item = groups[indexPath.section].items[indexPath.row]
             if item.type == .button || item.type == .standart {
                 if item.key == "mainButton" {
-                    let passcodeController = CVPasscodeController(interfaceStyle: .Light)
+                    let passcodeController = CVPasscodeController(interfaceStyle: .Dark, type: .new)
                     passcodeController.interfaceStringProvider = self
                     passcodeController.passcodeEvaluator = self
                     
@@ -146,37 +204,53 @@ extension VKPassPrefsViewController: CVPasscodeEvaluating, CVPasscodeInterfaceSt
         return 6
     }
     
-    func evaluatePasscode(passcode: String, forPasscodeController controller: CVPasscodeController) -> Bool {
-        if passcode == "123456" {
-            let alert = UIAlertController(title: "Content Unlocked", message: "This is some secret.", preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: "OK", style: .cancel, handler: nil))
-            
-            // Delay 300ms to prevent presenting another VC while passcode controller is still on presentation. You may replace this with your own solution.
-            DispatchQueue.main.asyncAfter(deadline: .now() + Double(Int64(NSEC_PER_MSEC)) * 200, execute: {
-                self.present(alert, animated: true, completion: nil)
-            })
-            
-            return true
+    func evaluatePasscode(passcode: String, forPasscodeController controller: CVPasscodeController, type: CVPasscodeInterfaceType) {
+        switch type {
+        case .new:
+            print("passcode setup")
+//            _ = try? storeKeychain(username: "VKPassReborn", password: passcode)
+//            let password = try? getKeychain()
+//            needChangePasscodePrefs(false)
+//            print(password)
+        case .check:
+            print("passcode check")
+        case .change:
+            print("passcode change")
+        case .delete:
+            print("passcode delete")
         }
-        return false
+    }
+    
+    func evaluatePasscode(passcode: String, forPasscodeController controller: CVPasscodeController) -> Bool {
+        var returnVal = false
+        guard let keychainPass = try? getKeychain() else { return false }
+        if passcode == keychainPass {
+            returnVal = true
+        }
+        
+        return returnVal
     }
     
     func passcodeControllerDidCancel(controller: CVPasscodeController) {
-        print("user cancelled")
+        dismiss(animated: true) {
+            //
+        }
     }
     
     func interfaceStringOfType(type: CVPasscodeInterfaceStringType, forPasscodeController controller: CVPasscodeController) -> String {
         switch type {
         case .Backspace:
-                return "BACK"
-            case .Cancel:
-                return "CANCEL"
-            case .InitialHint:
-                return "ХЗ чото"
-            case .WrongHint:
-                return "проебался"
-            }
+            return "Удалить"
+        case .Cancel:
+            return "Отмена"
+        case .InitialHint:
+            return "Введите пароль"
+        case .WrongHint:
+            return "Пароль неверный"
+        case .New:
+            return "Создайте пароль"
         }
+    }
     
     
 }
