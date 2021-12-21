@@ -11,13 +11,26 @@ import os.log
 
 let tweakResourceFolder: String = "/private/var/mobile/Library/Application Support/ru.anonz.vkpassreborn.bundle"
 
+func logt(_ string: String) {
+//    let log = OSLog.init(subsystem: "ru.anonz.vkpassreborn", category: "main")
+    os_log("Message: %@", log: .default, type: .error, string)
+//    os_log(.error, string, log)
+}
+
 func defaultPreferences() -> [Group] {
     var dictionaryStandart = [Group]()
-    dictionaryStandart.append(.init(id: 1, configurator: .init(headerTitle: "Main"), items: [
-        .init(title: "This is test button", key: "mainButton", type: .button),
+    dictionaryStandart.append(.init(id: 1, configurator: .init(headerTitle: "Главные"), items: [
+        .init(title: "Создать пароль", key: "mainButton", type: .button),
+        .init(title: "Использовать Touch/FaceID", key: "useBiometrics", disabled: false, isHidden: true, type: .withSwitch),
+        .init(title: "Использовать на диалоги", key: "useChat", disabled: false, isHidden: true, type: .withSwitch),
+        .init(title: "Изменить пароль", key: "changePasscode", disabled: false, isHidden: true, type: .button),
+        .init(title: "Удалить пароль", key: "deletePasscode", disabled: false, isHidden: true, type: .button)
     ]))
-    dictionaryStandart.append(.init(id: 2, configurator: .init(headerTitle: "Other"), items: [
-        .init(title: "Unlock music cache & subscription", key: "subscriptionActive", value: "false", type: .withSwitch)
+    dictionaryStandart.append(.init(id: 2, configurator: .init(headerTitle: "Остальное"), items: [
+        .init(title: "Разблокировать кэш", key: "subscriptionActive", value: "false", type: .withSwitch)
+    ]))
+    dictionaryStandart.append(.init(id: 3, configurator: .init(footerTitle: "In loving memory of @tolstp..."), items: [
+        .init(title: "", key: "memory", value: "false", type: .memory)
     ]))
     return dictionaryStandart
 }
@@ -43,13 +56,22 @@ private func checkElements(_ pref: [Group]) {
         if newPrefs[groupIndex].id == 1 {
             if newPrefs[groupIndex].items.filter({ $0.key == "useBiometrics" ||
                 $0.key == "deletePasscode" ||
-                $0.key == "changePasscode" }).isEmpty {
+                $0.key == "changePasscode" ||
+                $0.key == "useChat"
+            }).isEmpty {
                 let passItems: [Group.Item] = [
-                    .init(title: "Use biometrics", key: "useBiometrics", disabled: false, isHidden: true, type: .withSwitch),
-                    .init(title: "Change passcode", key: "changePasscode", disabled: false, isHidden: true, type: .button),
-                    .init(title: "Delete passcode", key: "deletePasscode", disabled: false, isHidden: true, type: .button)
+                    .init(title: "Использовать Touch/FaceID", key: "useBiometrics", disabled: false, isHidden: true, type: .withSwitch),
+                    .init(title: "Использовать на диалоги", key: "useChat", disabled: false, isHidden: true, type: .withSwitch),
+                    .init(title: "Изменить пароль", key: "changePasscode", disabled: false, isHidden: true, type: .button),
+                    .init(title: "Удалить пароль", key: "deletePasscode", disabled: false, isHidden: true, type: .button)
                 ]
                 newPrefs[groupIndex].items.append(contentsOf: passItems)
+            }
+            let createPassButton = newPrefs[groupIndex].items.filter({ $0.key == "mainButton" }).first
+            if let createPassButton = createPassButton {
+                var btn = createPassButton
+                btn.title = "Create passcode"
+                changePreferences(newPrefs[groupIndex], model: [btn])
             }
         }
     })
@@ -121,22 +143,60 @@ func needChangePasscodePrefs(_ hide: Bool) {
         if prefs[groupIndex].id == 1 {
             let pref = group.items.filter({ $0.key == "useBiometrics" ||
                 $0.key == "deletePasscode" ||
-                $0.key == "changePasscode" })
+                $0.key == "changePasscode" ||
+                $0.key == "mainButton" ||
+                $0.key == "useChat"
+            })
             let currentPref = pref.map({ model -> Group.Item in
                 var newModel = model
                 newModel.isHidden = hide
+                if newModel.key == "useBiometrics" {
+                    newModel.isHidden = (getBiometricType() != .none) ? hide : true
+                    newModel.disabled = (getBiometricType() != .none) ? model.disabled : false
+                }
+                if newModel.key == "mainButton" {
+                    newModel.isHidden = !hide
+                }
                 return newModel
             })
-            currentPref.forEach({ changePreferences(group, model: $0) })
+            changePreferences(group, model: currentPref)
         }
     })
 }
 
-func changePreferences(_ group: Group, model: Group.Item) {
+func changePreferences(_ group: Group, model: [Group.Item]) {
     var prefs = getDocumentsDictionary()
     if let row = prefs.firstIndex(where: {$0.id == group.id}) {
-        if let item = prefs[row].items.firstIndex(where: { $0.key == model.key }) {
-            prefs[row].items[item].value = model.value
+        if model.count == 1 {
+            if let item = prefs[row].items.firstIndex(where: { $0.key == model.first!.key }) {
+                if let first = model.first {
+                    prefs[row].items[item] = first
+                }
+            }
+        } else {
+            for model in model {
+                if let item = prefs[row].items.firstIndex(where: { $0.key == model.key }) {
+                    prefs[row].items[item] = model
+                }
+            }
+        }
+    }
+    createPreferencesPlist(save: true, new: prefs)
+}
+
+func changePreferencesHidden(_ group: Group, keys: [String], hidden: Bool) {
+    var prefs = getDocumentsDictionary()
+    if let row = prefs.firstIndex(where: {$0.id == group.id}) {
+        if keys.count == 1 {
+            if let item = prefs[row].items.firstIndex(where: { $0.key == keys.first }) {
+                prefs[row].items[item].isHidden = hidden
+            }
+        } else {
+            for key in keys {
+                if let item = prefs[row].items.firstIndex(where: { $0.key == key }) {
+                    prefs[row].items[item].isHidden = hidden
+                }
+            }
         }
     }
     createPreferencesPlist(save: true, new: prefs)

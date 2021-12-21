@@ -6,10 +6,9 @@ class AppDelegateHook: ClassHook<AppDelegate> {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         checkPreferences()
         let original = orig.application(application, didFinishLaunchingWithOptions: launchOptions)
-        if (getPreferences(for: "mainAlertEnabled") as NSString).boolValue {
-            let alert = UIAlertController(title: "TEST", message: "Wow \(getPreferences(for: "mainAlertEnabled"))", preferredStyle: .alert)
-            alert.addAction(.init(title: "Close", style: .cancel, handler: nil))
-            UIApplication.shared.keyWindow?.rootViewController?.present(alert, animated: true, completion: nil)
+        if getPasscode(username: "VKPassReborn") != nil {
+            let settings = VKPassPrefsViewController(viewModel: .init())
+            UIApplication.shared.keyWindow?.rootViewController?.present(settings.openPasscode(), animated: true, completion: nil)
         }
         return original
     }
@@ -61,13 +60,18 @@ final class VKPassCell: VKMCell {
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int { 0 }
     override func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? { return nil }
 }
-//@objcMembers class SideMenuViewController : VKMLiveController {
-//    dynamic func setupBottomButton() {}
-//    dynamic func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? { nil }
-//    dynamic func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat { 990 }
-//}
 
 class PeerHook: ClassHook<_TtC3vkm22PeerListViewController> {
+}
+
+class VKMHook: ClassHook<DialogsController> {
+    func viewWillAppear(_ animated: Bool) {
+        orig.viewWillAppear(animated)
+        if getPasscode(username: "VKPassReborn") != nil && (getPreferences(for: "useChat") as NSString).boolValue {
+            let settings = VKPassPrefsViewController(viewModel: .init())
+            UIApplication.shared.keyWindow?.rootViewController?.present(settings.openPasscode(), animated: true, completion: nil)
+        }
+    }
 }
 
 class SideMenuHook: ClassHook<SideMenuViewController> {

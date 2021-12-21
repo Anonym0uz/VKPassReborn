@@ -107,9 +107,6 @@ class CVKeypadCell: UIControl {
     
     func outlineNeed(_ need: Bool = true) {
         needOutline = need
-        if !need {
-            outlineView.layer.removeFromSuperlayer()
-        }
     }
     
     // MARK: - Touch event handlers

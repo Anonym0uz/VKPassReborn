@@ -12,6 +12,7 @@ class CVKeypad: UIView {
 
     private(set) var keypadCells = [CVKeypadCell]()
     private var biometricType: BiometricType = getBiometricType()
+    var passcodeType: CVPasscodeInterfaceType = .new
     private var verticalStack: UIStackView = {
         let stack = UIStackView()
         stack.translatesAutoresizingMaskIntoConstraints = false
@@ -90,11 +91,20 @@ class CVKeypad: UIView {
             stack.addConstraints([
                 cell.widthAnchor.constraint(equalToConstant: 85)
             ])
-            if (elements[i] == "biometrics_touch" || elements[i] == "biometrics_face") && biometricType == .none {
+            if (elements[i] == "biometrics_touch" || elements[i] == "biometrics_face") &&
+                (biometricType == .none || (getPreferences(for: "useBiometrics") as NSString).boolValue == false) {
                 cell.outlineNeed(false)
                 cell.image = nil
                 cell.text = nil
             }
+            /*
+             if (elements[i] == "biometrics_touch" || elements[i] == "biometrics_face") &&
+                 (biometricType == .none || (getPreferences(for: "useBiometrics") as NSString).boolValue == false) {
+                 cell.outlineNeed(false)
+                 cell.image = nil
+                 cell.text = nil
+             }
+             */
         }
         return stack
     }

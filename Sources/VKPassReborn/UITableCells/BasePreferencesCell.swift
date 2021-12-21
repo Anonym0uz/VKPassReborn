@@ -84,7 +84,7 @@ class BasePreferencesCell: UITableViewCell {
         model?.value = String(cellSwitch.isOn)
         if let group = group,
             let model = model {
-            changePreferences(group, model: model)
+            changePreferences(group, model: [model])
         }
     }
 

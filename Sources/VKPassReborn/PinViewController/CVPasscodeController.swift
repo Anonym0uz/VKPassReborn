@@ -69,6 +69,8 @@ public class CVPasscodeController: UIViewController {
     public let interfaceStyle: CVPasscodeInterfaceStyle // The getter of current interface style.
     private let passcodeType: CVPasscodeInterfaceType
     
+    public var dismissHandler: ((CVPasscodeInterfaceType) -> Void)?
+    
     public init(interfaceStyle: CVPasscodeInterfaceStyle, type: CVPasscodeInterfaceType = .check) {
         self.interfaceStyle = interfaceStyle
         self.passcodeType = type
@@ -129,6 +131,7 @@ public class CVPasscodeController: UIViewController {
         let interfaceVisualEffect = UIBlurEffect(style: .prominent)
         
         keypad.translatesAutoresizingMaskIntoConstraints = false
+        keypad.passcodeType = passcodeType
         keypad.action = { [weak self] button in
             guard let self = self else { return }
             self.cellDidTap(sender: button)
@@ -162,7 +165,7 @@ public class CVPasscodeController: UIViewController {
     
     public override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        if getBiometricType() != .none && passcodeType == .check {
+        if getBiometricType() != .none && passcodeType == .check && (getPreferences(for: "useBiometrics") as NSString).boolValue {
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
                 self.evaluteAuthentification()
             }
@@ -276,7 +279,7 @@ public class CVPasscodeController: UIViewController {
     
     @objc private func cancel() {
         if currentInput.count == 0 {
-            dismiss(animated: true, completion: nil)
+            passcodeEvaluator.passcodeControllerDidCancel(controller: self)
         } else {
             currentInput = (currentInput.count != 1) ? currentInput.dropLast().description : ""
             indicator.setNumberOfFilledDot(number: currentInput.count)
@@ -287,6 +290,20 @@ public class CVPasscodeController: UIViewController {
         if passcodeType == .new {
             passcodeEvaluator.evaluatePasscode(passcode: currentInput, forPasscodeController: self, type: .new)
             dismiss(animated: true, completion: nil)
+            return
+        }
+        if passcodeType == .delete {
+            passcodeEvaluator.evaluatePasscode(passcode: currentInput, forPasscodeController: self, type: .delete)
+            dismiss(animated: true, completion: nil)
+            return
+        }
+        if passcodeType == .change {
+            if passcodeEvaluator.evaluatePasscode(passcode: currentInput, forPasscodeController: self) {
+//                dismiss(animated: true, completion: nil)
+                dismiss(animated: false) {
+                    self.dismissHandler?(.change)
+                }
+            }
             return
         }
         if passcodeEvaluator.evaluatePasscode(passcode: currentInput, forPasscodeController: self) {

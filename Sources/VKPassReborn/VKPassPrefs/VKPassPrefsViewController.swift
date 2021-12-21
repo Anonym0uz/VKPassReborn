@@ -8,61 +8,88 @@
 import UIKit
 import Security
 
-struct Credentials {
-    var username: String
-    var password: String
-}
-enum KeychainError: Error {
-    case noPassword
-    case unexpectedPasswordData
-    case unhandledError(status: OSStatus)
-}
-
-func deletePassword(account: String) throws {
-    let query: [String: AnyObject] = [
-        kSecAttrAccount as String: account as AnyObject,
-        kSecClass as String: kSecClassGenericPassword
+func storePasscodes(username: String, password: String) {
+    let attributes: [String: Any] = [
+        kSecClass as String: kSecClassGenericPassword,
+        kSecAttrAccount as String: username,
+        kSecValueData as String: password.data(using: .utf8)!,
     ]
-    
-    let status = SecItemDelete(query as CFDictionary)
-    
-    guard status == errSecSuccess else {
-        throw KeychainError.unhandledError(status: status)
+
+    // Add user
+    if SecItemAdd(attributes as CFDictionary, nil) == noErr {
+        print("User saved successfully in the keychain")
+        logt("User saved successfully in the keychain")
+    } else {
+        print("Something went wrong trying to save the user in the keychain")
+        logt("Something went wrong trying to save the user in the keychain")
     }
 }
 
-private func storeKeychain(username: String, password: String) throws -> Any? {
-    let credentials = Credentials.init(username: username, password: password)
-    let data = credentials.password.data(using: .utf8)!
-
-    let query: [String: Any] = [kSecClass as String:  kSecClassGenericPassword,
-                                kSecAttrAccount as String: username,
-                                kSecValueData as String: data]
-    let status = SecItemAdd(query as CFDictionary, nil)
-    guard status == errSecSuccess else {
-        throw KeychainError.unhandledError(status: status) }
-    return status
-}
-
-private func getKeychain() throws -> String {
-    let query: [String: Any] = [kSecClass as String: kSecClassGenericPassword,
-                                kSecMatchLimit as String: kSecMatchLimitOne,
-                                kSecReturnAttributes as String: true,
-                                kSecReturnData as String: true]
+func getPasscode(username: String) -> String? {
+    let query: [String: Any] = [
+        kSecClass as String: kSecClassGenericPassword,
+        kSecAttrAccount as String: username,
+        kSecMatchLimit as String: kSecMatchLimitOne,
+        kSecReturnAttributes as String: true,
+        kSecReturnData as String: true,
+    ]
     var item: CFTypeRef?
-    let status = SecItemCopyMatching(query as CFDictionary, &item)
-    guard status != errSecItemNotFound else { throw KeychainError.noPassword }
-    guard status == errSecSuccess else { throw KeychainError.unhandledError(status: status) }
-    
-    guard let existingItem = item as? [String : Any],
-          let passwordData = existingItem[kSecValueData as String] as? Data,
-          let password = String(data: passwordData, encoding: String.Encoding.utf8),
-          let account = existingItem[kSecAttrAccount as String] as? String
-    else {
-        throw KeychainError.unexpectedPasswordData
+
+    // Check if user exists in the keychain
+    if SecItemCopyMatching(query as CFDictionary, &item) == noErr {
+        // Extract result
+        if let existingItem = item as? [String: Any],
+           let username = existingItem[kSecAttrAccount as String] as? String,
+           let passwordData = existingItem[kSecValueData as String] as? Data,
+           let password = String(data: passwordData, encoding: .utf8)
+        {
+            print(username)
+            print(password)
+            logt(username)
+            logt(password)
+            return password
+        }
+    } else {
+        print("Something went wrong trying to find the user in the keychain")
+        logt("Something went wrong trying to find the user in the keychain")
+        return nil
     }
-    _ = Credentials(username: account, password: password)
-    return password
+    return nil
+}
+
+func updatePasscode(username: String, newPassword: String) {
+    let query: [String: Any] = [
+        kSecClass as String: kSecClassGenericPassword,
+        kSecAttrAccount as String: username,
+    ]
+
+    // Set attributes for the new password
+    let attributes: [String: Any] = [kSecValueData as String: newPassword.data(using: .utf8)!]
+
+    // Find user and update
+    if SecItemUpdate(query as CFDictionary, attributes as CFDictionary) == noErr {
+        print("Password has changed")
+        logt("Password has changed")
+    } else {
+        print("Something went wrong trying to update the password")
+        logt("Something went wrong trying to update the password")
+    }
+}
+
+func deletePasscode(username: String) {
+    let query: [String: Any] = [
+        kSecClass as String: kSecClassGenericPassword,
+        kSecAttrAccount as String: username,
+    ]
+
+    // Find user and delete
+    if SecItemDelete(query as CFDictionary) == noErr {
+        print("User removed successfully from the keychain")
+        logt("User removed successfully from the keychain")
+    } else {
+        print("Something went wrong trying to remove the user from the keychain")
+        logt("Something went wrong trying to remove the user from the keychain")
+    }
 }
 
 class VKPassPrefsViewController: UIViewController {
@@ -70,6 +97,8 @@ class VKPassPrefsViewController: UIViewController {
     var viewModel: VKPassPrefsViewModelProtocol
     var tableView: UITableView!
     var groups: [Group]?
+    
+    private var byApplication: Bool = false
     
     init(viewModel: VKPassPrefsViewModel) {
         self.viewModel = viewModel
@@ -110,9 +139,21 @@ class VKPassPrefsViewController: UIViewController {
     func bind() {
         viewModel.needUpdate = { [weak self] in
             guard let self = self else { return }
-            self.groups = self.viewModel.items
+            self.groups = self.viewModel.items?.enumerated().map({ index, group in
+                var gr = group
+                gr.items = gr.items.filter({ $0.isHidden == false })
+                return Group(id: gr.id, configurator: gr.configurator, items: gr.items.filter({ $0.isHidden == false }))
+            })
             self.tableView.reloadData()
         }
+    }
+    
+    func openPasscode() -> CVPasscodeController {
+        byApplication = true
+        let passcodeController = CVPasscodeController(interfaceStyle: .Dark, type: .check)
+        passcodeController.interfaceStringProvider = self
+        passcodeController.passcodeEvaluator = self
+        return passcodeController
     }
 }
 
@@ -126,7 +167,7 @@ extension VKPassPrefsViewController: UITableViewDelegate, UITableViewDataSource 
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         if let groups = groups {
-            return groups[section].items.filter({ $0.isHidden == false }).count
+            return groups[section].items.count
         }
         return 0
     }
@@ -181,15 +222,27 @@ extension VKPassPrefsViewController: UITableViewDelegate, UITableViewDataSource 
             let item = groups[indexPath.section].items[indexPath.row]
             if item.type == .button || item.type == .standart {
                 if item.key == "mainButton" {
-                    let passcodeController = CVPasscodeController(interfaceStyle: .Dark, type: .check)
+                    let passcodeController = CVPasscodeController(interfaceStyle: .Dark, type: .new)
                     passcodeController.interfaceStringProvider = self
                     passcodeController.passcodeEvaluator = self
-                    
                     present(passcodeController, animated: true, completion: nil)
                 }
-//                let alert = UIAlertController(title: "Test", message: groups[indexPath.section].items[indexPath.row].key, preferredStyle: .alert)
-//                alert.addAction(.init(title: "OK", style: .cancel))
-//                self.present(alert, animated: true)
+                if item.key == "changePasscode" {
+                    let passcodeController = CVPasscodeController(interfaceStyle: .Dark, type: .change)
+                    passcodeController.interfaceStringProvider = self
+                    passcodeController.passcodeEvaluator = self
+                    passcodeController.dismissHandler = { [weak self] type in
+                        guard let self = self else { return }
+                        self.passcodeDismissed()
+                    }
+                    present(passcodeController, animated: true, completion: nil)
+                }
+                if item.key == "deletePasscode" {
+                    let passcodeController = CVPasscodeController(interfaceStyle: .Dark, type: .delete)
+                    passcodeController.interfaceStringProvider = self
+                    passcodeController.passcodeEvaluator = self
+                    present(passcodeController, animated: true, completion: nil)
+                }
             }
         }
     }
@@ -207,24 +260,37 @@ extension VKPassPrefsViewController: CVPasscodeEvaluating, CVPasscodeInterfaceSt
     func evaluatePasscode(passcode: String, forPasscodeController controller: CVPasscodeController, type: CVPasscodeInterfaceType) {
         switch type {
         case .new:
-            print("passcode setup")
-//            _ = try? storeKeychain(username: "VKPassReborn", password: passcode)
-//            let password = try? getKeychain()
-//            needChangePasscodePrefs(false)
-//            print(password)
+            storePasscodes(username: "VKPassReborn", password: passcode)
+            getPasscode(username: "VKPassReborn")
+            needChangePasscodePrefs(false)
+//            var prefs = getDocumentsDictionary()
+//            var pref = prefs.filter({ $0.id == 1 }).first
+//            let pref2 = pref?.items.filter({ $0.key == "useBiometrics" || $0.key == "deletePasscode" || $0.key == "changePasscode" })
+//            let pref3 = pref2?.enumerated().map({ index, model -> Group.Item in
+//                var newModel = model
+//                newModel.isHidden = false
+//                return newModel
+//            })
+//            pref?.items = pref3 ?? []
         case .check:
-            print("passcode check")
+            print("")
         case .change:
-            print("passcode change")
+            deletePasscode(username: "VKPassReborn")
+            needChangePasscodePrefs(true)
         case .delete:
-            print("passcode delete")
+            deletePasscode(username: "VKPassReborn")
+            needChangePasscodePrefs(true)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                self.present(createVKPassAlert(message: "Пароль удален"), animated: true)
+            }
         }
+        viewModel.getData()
     }
     
     func evaluatePasscode(passcode: String, forPasscodeController controller: CVPasscodeController) -> Bool {
         var returnVal = false
-        guard let keychainPass = try? getKeychain() else { return false }
-        if passcode == "123456" {
+        guard let keychainPass = getPasscode(username: "VKPassReborn") else { return false }
+        if passcode == keychainPass {
             returnVal = true
         }
         
@@ -232,6 +298,9 @@ extension VKPassPrefsViewController: CVPasscodeEvaluating, CVPasscodeInterfaceSt
     }
     
     func passcodeControllerDidCancel(controller: CVPasscodeController) {
+        if byApplication {
+            exit(0)
+        }
         dismiss(animated: true) {
             //
         }
@@ -252,7 +321,14 @@ extension VKPassPrefsViewController: CVPasscodeEvaluating, CVPasscodeInterfaceSt
         }
     }
     
-    
+    func passcodeDismissed() {
+        deletePasscode(username: "VKPassReborn")
+        needChangePasscodePrefs(true)
+        let passcodeController = CVPasscodeController(interfaceStyle: .Dark, type: .new)
+        passcodeController.interfaceStringProvider = self
+        passcodeController.passcodeEvaluator = self
+        self.present(passcodeController, animated: false, completion: nil)
+    }
 }
 
 extension VKPassPrefsViewController {
@@ -261,11 +337,17 @@ extension VKPassPrefsViewController {
     }
     
     @objc func reloadSettings() {
-        removePreferences()
-        let alert = UIAlertController(title: "VKPassReborn", message: "Preferences has been reloaded.", preferredStyle: .alert)
-        alert.addAction(.init(title: "OK", style: .cancel, handler: { _ in
-            self.viewModel.getData()
-        }))
-        present(alert, animated: true)
+        if getPasscode(username: "VKPassReborn") != nil {
+            let passcodeController = CVPasscodeController(interfaceStyle: .Dark, type: .delete)
+            passcodeController.interfaceStringProvider = self
+            passcodeController.passcodeEvaluator = self
+            passcodeController.dismissHandler = { _ in
+                removePreferences()
+                self.present(createVKPassAlert(cancelHandler: { _ in
+                    self.viewModel.getData()
+                }), animated: true)
+            }
+            present(passcodeController, animated: true, completion: nil)
+        }
     }
 }

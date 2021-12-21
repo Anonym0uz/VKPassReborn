@@ -280,3 +280,12 @@
 - (void)hideSideMenu;
 - (void)showSideMenu;
 @end
+
+@interface VKMMainController : UITabBarController
+- (void)openDialogs;
+@end
+
+@interface DialogsController : VKMController
+- (void)viewDidAppear:(_Bool)arg1;
+- (void)viewDidLoad;
+@end

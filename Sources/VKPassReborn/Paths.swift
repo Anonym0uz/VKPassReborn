@@ -9,7 +9,7 @@ import Foundation
 import UIKit
 
 enum ItemType: String, Codable {
-    case standart, subTitle, withSwitch, button
+    case standart, subTitle, withSwitch, button, memory
 }
 
 struct GroupConfiguration: Codable, Hashable {
