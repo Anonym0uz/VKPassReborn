@@ -348,6 +348,11 @@ extension VKPassPrefsViewController {
                 }), animated: true)
             }
             present(passcodeController, animated: true, completion: nil)
+        } else {
+            removePreferences()
+            self.present(createVKPassAlert(cancelHandler: { _ in
+                self.viewModel.getData()
+            }), animated: true)
         }
     }
 }
