@@ -186,6 +186,7 @@ final class VKPassView: UIView {
     @objc func openVKPass() {
         let navCtrl = VANavigationController(rootViewController: VKPassPrefsViewController(viewModel: .init()))
         hookedClass?.delegate.sideMenuViewController(hookedClass, requirePresent: navCtrl, modal: true)
+//        hookedClass?.transitioningDelegate.
     }
 }
 

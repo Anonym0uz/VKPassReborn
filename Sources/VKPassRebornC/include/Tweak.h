@@ -108,11 +108,61 @@
 - (void)sideMenuViewController:(SideMenuViewController *)arg1 requirePresentViewController:(UIViewController *)arg2 modal:(_Bool)arg3;
 @end
 
-@interface SideMenuViewController : VKMLiveController
+@class SideMenuTransitionGestureRecognizer;
+
+@protocol SideMenuTransitionGestureRecognizerProvider <NSObject>
+- (UIViewController *)destinationViewControllerForTransitionWithGestureRecognizer:(SideMenuTransitionGestureRecognizer *)arg1;
+@end
+
+@interface SideMenuViewControllerTransitioningDelegate : NSObject <UIViewControllerTransitioningDelegate>
 {
+    unsigned long long _direction;
+    UIPercentDrivenInteractiveTransition *_interactiveTransitionController;
+}
+
++ (id)withDirection:(unsigned long long)arg1;
+@property(retain, nonatomic) UIPercentDrivenInteractiveTransition *interactiveTransitionController; // @synthesize interactiveTransitionController=_interactiveTransitionController;
+@property(nonatomic) unsigned long long direction; // @synthesize direction=_direction;
+- (void)resetInteractiveTransition;
+- (void)cancelInteractiveTransition;
+- (void)finishInteractiveTransition;
+- (void)updateInteractiveTransition:(double)arg1;
+- (void)startInteractiveTransitionIfNeeded;
+- (id)animationControllerForDismissedController:(id)arg1;
+- (id)animationControllerForPresentedController:(id)arg1 presentingController:(id)arg2 sourceController:(id)arg3;
+- (id)interactionControllerForDismissal:(id)arg1;
+- (id)interactionControllerForPresentation:(id)arg1;
+- (id)presentationControllerForPresentedViewController:(id)arg1 presentingViewController:(id)arg2 sourceViewController:(id)arg3;
+
+@end
+
+@interface SideMenuTransitionGestureRecognizer : UIPanGestureRecognizer
+{
+    _Bool _dismissing;
+//    SideMenuViewControllerTransitioningDelegate *transitioningDelegate;
+    id <SideMenuTransitionGestureRecognizerProvider> _provider;
+    UIViewController *_sourceController;
+}
+
++ (id)dismissingToViewController:(id)arg1 withInteractiveTransition:(id)arg2 withProvider:(id)arg3;
++ (id)presentingFromSourceViewController:(id)arg1 withInteractiveTransition:(id)arg2 withProvider:(id)arg3;
+@property(nonatomic) __weak UIViewController *sourceController; // @synthesize sourceController=_sourceController;
+@property(nonatomic) __weak id <SideMenuTransitionGestureRecognizerProvider> provider; // @synthesize provider=_provider;
+//@property(retain, nonatomic) SideMenuViewControllerTransitioningDelegate *transitioningDelegate; // @synthesize transitioningDelegate;
+@property(nonatomic, getter=isDismissing) _Bool dismissing; // @synthesize dismissing=_dismissing;
+- (void)handle:(id)arg1;
+- (_Bool)validTouchesToStart;
+- (id)initWithSourceViewController:(id)arg1 withInteractiveTransition:(id)arg2 withProvider:(id)arg3;
+
+@end
+
+@interface SideMenuViewController : VKMLiveController <SideMenuTransitionGestureRecognizerProvider>
+{
+    SideMenuViewControllerTransitioningDelegate *transitioningDelegate;
     id <SideMenuViewControllerDelegate> _delegate;
 }
 @property(nonatomic) __weak id <SideMenuViewControllerDelegate> delegate;
+@property(retain, nonatomic) SideMenuViewControllerTransitioningDelegate *transitioningDelegate; // @synthesize transitioningDelegate;
 - (double)tableView:(id)arg1 heightForHeaderInSection:(long long)arg2;
 - (id)tableView:(id)arg1 viewForHeaderInSection:(long long)arg2;
 - (void)qrButtonDidClick:(id)arg1;
