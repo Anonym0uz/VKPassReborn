@@ -97,14 +97,6 @@ class CVKeypad: UIView {
                 cell.image = nil
                 cell.text = nil
             }
-            /*
-             if (elements[i] == "biometrics_touch" || elements[i] == "biometrics_face") &&
-                 (biometricType == .none || (getPreferences(for: "useBiometrics") as NSString).boolValue == false) {
-                 cell.outlineNeed(false)
-                 cell.image = nil
-                 cell.text = nil
-             }
-             */
         }
         return stack
     }

@@ -166,9 +166,9 @@ public class CVPasscodeController: UIViewController {
     public override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         if getBiometricType() != .none && passcodeType == .check && (getPreferences(for: "useBiometrics") as NSString).boolValue {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+//            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
                 self.evaluteAuthentification()
-            }
+//            }
         }
     }
     
@@ -233,9 +233,9 @@ public class CVPasscodeController: UIViewController {
     private func authByBiometric(_ need: Bool = true) {
         if need {
             indicator.setNumberOfFilledDot(number: self.passcodeEvaluator.numberOfDigitsInPasscodeForPasscodeController(controller: self))
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+//            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
                 self.dismiss(animated: true, completion: nil)
-            }
+//            }
         } else {
             currentInput = ""
             indicator.setNumberOfFilledDot(number: 0)

@@ -54,19 +54,16 @@ final class VKPassCell: VKMCell {
 }
 
 @objcMembers class VKMLiveController : VKMTableController {}
-@objcMembers class _TtC3vkm22PeerListViewController : UITableViewController {
-    override func numberOfSections(in tableView: UITableView) -> Int { 0 }
-    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell { return UITableViewCell() }
-    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int { 0 }
-    override func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? { return nil }
-}
+//@objcMembers class _TtC3vkm22PeerListViewController : UITableViewController {
+//    override func numberOfSections(in tableView: UITableView) -> Int { 0 }
+//    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell { return UITableViewCell() }
+//    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int { 0 }
+//    override func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? { return nil }
+//}
 
 class PeerHook: ClassHook<_TtC3vkm22PeerListViewController> {
-}
-
-class VKMHook: ClassHook<DialogsController> {
-    func viewWillAppear(_ animated: Bool) {
-        orig.viewWillAppear(animated)
+    func viewDidAppear(_ animated: Bool) {
+        orig.viewDidAppear(animated)
         if getPasscode(username: "VKPassReborn") != nil && (getPreferences(for: "useChat") as NSString).boolValue {
             let settings = VKPassPrefsViewController(viewModel: .init())
             UIApplication.shared.keyWindow?.rootViewController?.present(settings.openPasscode(), animated: true, completion: nil)

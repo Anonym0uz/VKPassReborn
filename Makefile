@@ -9,6 +9,7 @@ TWEAK_NAME = VKPassReborn
 
 BUNDLE_NAME = ru.anonz.vkpassreborn
 ru.anonz.vkpassreborn_INSTALL_PATH = /private/var/mobile/Library/Application Support
+VKPassReborn_LOGOS_DEFAULT_GENERATOR = internal
 VKPassReborn_CODESIGN_FLAGS = -Sentitlements.xml
 VKPassReborn_FILES = $(shell find Sources/VKPassReborn -name '*.swift') $(shell find Sources/VKPassRebornC -name '*.m' -o -name '*.c' -o -name '*.mm' -o -name '*.cpp')
 VKPassReborn_SWIFTFLAGS = -ISources/VKPassRebornC/include

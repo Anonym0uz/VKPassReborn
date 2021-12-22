@@ -119,8 +119,11 @@
 @end
 
 @interface _TtC3vkm22PeerListViewController : UITableViewController <UITableViewDragDelegate, UITableViewDropDelegate>
-- (id)tableView:(id)arg1 leadingSwipeActionsConfigurationForRowAtIndexPath:(id)arg2;
+- (void)viewWillAppear:(_Bool)arg1;
+- (void)viewDidAppear:(_Bool)arg1;
+- (UISwipeActionsConfiguration *)tableView:(UITableView *)tableView leadingSwipeActionsConfigurationForRowAtIndexPath:(NSIndexPath *)indexPath;
 - (id)tableView:(id)arg1 cellForRowAtIndexPath:(id)arg2;
+- (_Bool)chatIsDisappearing:(id)arg1;
 @end
 
 @interface BaseSettingsController : VKMTableController
@@ -287,5 +290,6 @@
 
 @interface DialogsController : VKMController
 - (void)viewDidAppear:(_Bool)arg1;
+- (void)didBecomeActive;
 - (void)viewDidLoad;
 @end
