@@ -22,13 +22,41 @@ class AppDelegateHook: ClassHook<AppDelegate> {
 @objcMembers class VKMController: VKController {}
 @objcMembers class VKMScrollViewController: VKMController {}
 @objcMembers class VKMTableController: VKMScrollViewController {}
-@objcMembers class BaseSettingsController: VKMTableController {}
-@objcMembers class ModernSettingsController: BaseSettingsController {}
+//@objcMembers class BaseSettingsController: VKMTableController {
+//    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int { 0 }
+//    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell { return UITableViewCell() }
+//}
+//@objcMembers class ModernSettingsController: BaseSettingsController {}
 @objcMembers class VKSideMenuContainerController: VKMController {
     @objc dynamic func callMethod() {}
     dynamic func showSideMenu() {}
     dynamic func hideSideMenu() {}
 }
+
+//class VKBaseSettingsHook: ClassHook<BaseSettingsController> {
+//    
+//    func viewDidLoad() {
+//        orig.viewDidLoad()
+//    }
+//    
+//    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+//        if section == 2 {//section 2 is acc+design+app+privacy+blacklist
+//            return orig.tableView(tableView, numberOfRowsInSection: section)
+//        }
+//        return orig.tableView(tableView, numberOfRowsInSection: section)
+//    }
+//    
+//    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+//        if indexPath.section == 5 && indexPath.row == 1 {
+//            let cell = tableView.dequeueReusableCell(withIdentifier: "kek", for: indexPath)
+//            cell.textLabel?.text = "kek"
+//            return cell
+//        } else {
+//            return orig.tableView(tableView, cellForRowAt: indexPath)
+//        }
+//    }
+//    
+//}
 
 class VKSideHook: ClassHook<VKSideMenuContainerController> {
     
@@ -184,9 +212,9 @@ final class VKPassView: UIView {
     }
     
     @objc func openVKPass() {
-        let navCtrl = VANavigationController(rootViewController: VKPassPrefsViewController(viewModel: .init()))
+        let settingsVC = VKPassPrefsViewController(viewModel: .init())
+        let navCtrl = VANavigationController(rootViewController: settingsVC)
         hookedClass?.delegate.sideMenuViewController(hookedClass, requirePresent: navCtrl, modal: true)
-//        hookedClass?.transitioningDelegate.
     }
 }
 
@@ -197,30 +225,19 @@ class AboutViewControllerHook: ClassHook<AboutViewController> {
     
 }
 
-class ModernSettingsHook: ClassHook<ModernSettingsController> {
-    
-    var vkpassCell: VKMCell! = {
-        let cell = VKMCell()
-        return cell
-    }()
-    
-//    var tableView: UITableView?
-    
-    func viewDidLoad() {
-        orig.viewDidLoad()
-//        self.tableView?.register(VKPassCell.self, forCellReuseIdentifier: "String(describing: VKPassCell.self)")
-    }
-    
-//    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-//        let original = orig.tableView(tableView, cellForRowAt: indexPath)
-////        if let cell = tableView.dequeueReusableCell(withIdentifier: "String(describing: VKPassCell.self)", for: indexPath) as? VKPassCell {
-//////            cell.setModel(groups?[indexPath.section].items[indexPath.row] ?? Group.Item())
-////            return cell
-////        }
+//class ModernSettingsHook: ClassHook<ModernSettingsController> {
 //
-//        return original
+//    var vkpassCell: VKMCell! = {
+//        let cell = VKMCell()
+//        return cell
+//    }()
+//
+////    var tableView: UITableView?
+//
+//    func viewDidLoad() {
+//        orig.viewDidLoad()
 //    }
-}
+//}
 
 class ChatControllerHook: ClassHook<ChatController> {
 }

@@ -175,8 +175,8 @@ extension VKPassPrefsViewController: UITableViewDelegate, UITableViewDataSource 
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         if section == 0 {
             let sectionImage = UIImageView()
-            sectionImage.contentMode = .scaleAspectFill
-            sectionImage.image = UIImage(named: "\(tweakResourceFolder)/vkpassheader.jpg")
+            sectionImage.contentMode = .scaleAspectFit
+            sectionImage.image = UIImage(named: "\(tweakResourceFolder)/vkpassheader.png")
             sectionImage.clipsToBounds = true
             return sectionImage
         }

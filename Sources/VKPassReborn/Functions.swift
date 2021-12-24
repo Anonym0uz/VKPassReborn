@@ -22,7 +22,7 @@ func defaultPreferences() -> [Group] {
     dictionaryStandart.append(.init(id: 1, configurator: .init(headerTitle: "Главные"), items: [
         .init(title: "Создать пароль", key: "mainButton", type: .button),
         .init(title: "Использовать Touch/FaceID", key: "useBiometrics", disabled: false, isHidden: true, type: .withSwitch),
-        .init(title: "Использовать на диалоги", key: "useChat", disabled: false, isHidden: true, type: .withSwitch),
+        .init(title: "Использовать на диалоги (NON-STABLE)", key: "useChat", disabled: false, isHidden: true, type: .withSwitch),
         .init(title: "Изменить пароль", key: "changePasscode", disabled: false, isHidden: true, type: .button),
         .init(title: "Удалить пароль", key: "deletePasscode", disabled: false, isHidden: true, type: .button)
     ]))
